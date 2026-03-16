@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 def load_bonuses_from_config(config: dict) -> list[TransferBonus]:
     """Load transfer bonuses from the YAML config (manual entry for Phase 1)."""
-    bonuses_raw = config.get("transfer_bonuses", [])
+    bonuses_raw = config.get("transfer_bonuses") or []
     bonuses: list[TransferBonus] = []
 
     for b in bonuses_raw:
