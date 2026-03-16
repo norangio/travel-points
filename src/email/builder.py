@@ -38,6 +38,7 @@ def build_digest_email(
     bonuses: list[TransferBonus],
     balances: dict[str, int],
     config: dict,
+    search_stats: list[dict] | None = None,
 ) -> EmailContent:
     """Build the complete daily digest email."""
     pt = ZoneInfo("America/Los_Angeles")
@@ -46,6 +47,10 @@ def build_digest_email(
 
     # Classify bonuses
     bonus_alerts = _classify_bonuses(bonuses)
+
+    stats = search_stats or []
+    total_routes = len(stats)
+    total_raw_results = sum(s.get("raw_results", 0) for s in stats)
 
     # Build template context
     context = {
@@ -57,6 +62,9 @@ def build_digest_email(
         "travelers": config.get("travelers", 2),
         "total_deals": len(deals),
         "has_bonuses": len(bonuses) > 0,
+        "search_stats": stats,
+        "total_routes_searched": total_routes,
+        "total_raw_results": total_raw_results,
     }
 
     # Render HTML
@@ -64,7 +72,7 @@ def build_digest_email(
     html_body = html_template.render(**context)
 
     # Render plain text
-    text_body = _build_plain_text(deals, bonuses, balances, config, digest_date)
+    text_body = _build_plain_text(deals, bonuses, balances, config, digest_date, stats)
 
     subject = f"Points Deal Finder — {digest_date}"
 
@@ -101,6 +109,7 @@ def _build_plain_text(
     balances: dict[str, int],
     config: dict,
     digest_date: str,
+    search_stats: list[dict] | None = None,
 ) -> str:
     """Build plain text version of the email."""
     lines = [
@@ -174,6 +183,19 @@ def _build_plain_text(
                     lines.append(f"   Tip: {la.notes}")
     else:
         lines.append("No deals found matching your criteria today.")
+        if search_stats:
+            total_routes = len(search_stats)
+            total_raw = sum(s.get("raw_results", 0) for s in search_stats)
+            lines.append("")
+            lines.append(
+                f"WHAT WE SEARCHED — {total_routes} routes, {total_raw} raw results"
+            )
+            lines.append("-" * 30)
+            for s in search_stats:
+                lines.append(
+                    f"  {s['route']} ({s['direction']}) "
+                    f"· {s['trip_name']}: {s['raw_results']} results"
+                )
 
     # Balances
     lines.extend(["", "YOUR BALANCES", "-" * 30])

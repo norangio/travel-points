@@ -72,6 +72,8 @@ async def run_digest() -> None:
     all_deals: list[ScoredDeal] = []
     api_calls = 0
 
+    search_stats: list[dict] = []  # per-route search summary
+
     try:
         for trip in trips:
             trip_name = trip.get("name", "Unnamed Trip")
@@ -105,6 +107,7 @@ async def run_digest() -> None:
                         )
                         api_calls += 1
 
+                        route_deals = 0
                         for raw in results:
                             deal = await _process_result(
                                 raw=raw,
@@ -121,13 +124,26 @@ async def run_digest() -> None:
                             )
                             if deal:
                                 all_deals.append(deal)
+                                route_deals += 1
                                 api_calls += 1  # get_trip call
+
+                        search_stats.append({
+                            "route": f"{from_apt} → {to_apt}",
+                            "direction": leg["direction"].capitalize(),
+                            "trip_name": trip_name,
+                            "raw_results": len(results),
+                            "qualifying_deals": route_deals,
+                        })
 
     finally:
         await client.close()
 
     logger.info(
         f"Found {len(all_deals)} deals from {api_calls} API calls"
+    )
+    total_raw = sum(s["raw_results"] for s in search_stats)
+    logger.info(
+        f"Searched {len(search_stats)} routes, {total_raw} total raw results"
     )
 
     # Step 5: Rank and take top N
@@ -140,6 +156,7 @@ async def run_digest() -> None:
         bonuses=bonuses,
         balances=balances,
         config=config,
+        search_stats=search_stats,
     )
 
     recipients = email_config.get("recipients", [])
@@ -260,10 +277,10 @@ async def _process_result(
     """Process a single seats.aero result into a ScoredDeal (or None if filtered)."""
     avail = parse_availability(raw)
 
-    if avail.points_cost == 0:
-        return None
+    _tag = f"[{avail.source}] {avail.origin}→{avail.destination} {avail.departure_date}"
 
-    if avail.seats_available and avail.seats_available < 1:
+    if avail.points_cost == 0:
+        logger.info(f"FILTERED zero_cost: {_tag}")
         return None
 
     # Get trip detail for routing info
@@ -277,10 +294,19 @@ async def _process_result(
     max_travel = routing_config.get("max_total_travel_hours", 24)
 
     if avail.num_connections > max_conn:
+        logger.info(
+            f"FILTERED routing: {_tag} — {avail.num_connections} connections > max {max_conn}"
+        )
         return None
     if avail.max_layover_hours > max_layover and avail.max_layover_hours > 0:
+        logger.info(
+            f"FILTERED layover: {_tag} — {avail.max_layover_hours}h > max {max_layover}h"
+        )
         return None
     if avail.total_travel_hours > max_travel and avail.total_travel_hours > 0:
+        logger.info(
+            f"FILTERED travel_time: {_tag} — {avail.total_travel_hours}h > max {max_travel}h"
+        )
         return None
 
     # Calculate transfer paths
@@ -294,6 +320,9 @@ async def _process_result(
     )
 
     if not paths:
+        logger.info(
+            f"FILTERED no_paths: {_tag} — source '{avail.source}' not in any partner program"
+        )
         return None
 
     best_path = paths[0]

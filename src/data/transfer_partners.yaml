@@ -13,7 +13,7 @@ chase_ur:
     avios:
       rate: 1.0
       instant: true
-      seats_aero_source: "virginatlantic"
+      seats_aero_source: "avios"
       notes: "Books BA, Aer Lingus, Iberia, Qatar via Avios"
     flying_blue:
       rate: 1.0
@@ -68,7 +68,7 @@ capital_one:
     avios:
       rate: 1.0
       instant: true
-      seats_aero_source: "virginatlantic"
+      seats_aero_source: "avios"
     singapore:
       rate: 1.0
       instant: true

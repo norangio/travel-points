@@ -120,6 +120,32 @@ def parse_availability(raw: dict, trip_detail: dict | None = None) -> AwardAvail
     except (ValueError, IndexError):
         departure_date = date.today()
 
+    # Determine cabin and its IATA code (J=business, F=first, W=premium, Y=economy)
+    cabin_val = raw.get("Cabin", raw.get("cabin", "business"))
+    cabin_code = _cabin_code(cabin_val)
+
+    # Mileage cost: seats.aero may use per-cabin fields (JMileageCost) OR a flat field.
+    # Try per-cabin first, then generic fallback.
+    points_cost = (
+        _parse_int(raw.get(f"{cabin_code}MileageCost"))
+        or _parse_int(raw.get("MileageCost", raw.get("mileage_cost", 0)))
+    )
+
+    # Seats: same per-cabin pattern
+    seats_available = (
+        _parse_int(raw.get(f"{cabin_code}RemainingSeats"))
+        or _parse_int(raw.get("RemainingSeats", raw.get("remaining_seats", 0)))
+    )
+
+    if not points_cost:
+        logger.debug(
+            f"zero cost for {source} {raw.get('OriginAirport','')}→"
+            f"{raw.get('DestinationAirport','')} | "
+            f"cabin_code={cabin_code} | "
+            f"keys with 'cost'/'mile': "
+            f"{[(k,v) for k,v in raw.items() if any(t in k.lower() for t in ('cost','mile','seat','remain','avail'))]}"
+        )
+
     # Base fields
     avail = AwardAvailability(
         id=str(availability_id),
@@ -127,12 +153,10 @@ def parse_availability(raw: dict, trip_detail: dict | None = None) -> AwardAvail
         origin=raw.get("OriginAirport", raw.get("origin_airport", "")),
         destination=raw.get("DestinationAirport", raw.get("destination_airport", "")),
         departure_date=departure_date,
-        cabin=raw.get("Cabin", raw.get("cabin", "business")),
-        points_cost=_parse_int(raw.get("MileageCost", raw.get("mileage_cost", 0))),
+        cabin=cabin_val,
+        points_cost=points_cost,
         taxes_usd=_parse_float(raw.get("TotalTaxes", raw.get("total_taxes", 0))),
-        seats_available=_parse_int(
-            raw.get("RemainingSeats", raw.get("remaining_seats", 0))
-        ),
+        seats_available=seats_available,
         raw_data=raw,
     )
 
@@ -235,6 +259,26 @@ def _parse_datetime(s: str) -> datetime | None:
         except ValueError:
             continue
     return None
+
+
+def _cabin_code(cabin: str) -> str:
+    """Map a cabin name or code to its single-letter IATA code."""
+    c = cabin.strip().upper()
+    if c in ("J", "C", "D", "I", "Z"):  # IATA business class codes
+        return "J"
+    if c in ("F", "P", "A"):  # IATA first class codes
+        return "F"
+    if c in ("W", "S"):  # IATA premium economy
+        return "W"
+    # Map common full-name strings
+    mapping = {
+        "BUSINESS": "J",
+        "FIRST": "F",
+        "PREMIUM": "W",
+        "PREMIUM ECONOMY": "W",
+        "ECONOMY": "Y",
+    }
+    return mapping.get(c, "J")  # default to J (business) if unrecognised
 
 
 def _parse_int(val) -> int:

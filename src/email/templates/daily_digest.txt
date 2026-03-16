@@ -37,7 +37,12 @@ TOP {{ total_deals }} DEAL{{ 'S' if total_deals != 1 else '' }} TONIGHT
 {% endfor %}
 {% else %}
 No business class deals matched your criteria today. We'll keep scanning!
-{% endif %}
+
+{% if search_stats %}
+WHAT WE SEARCHED — {{ total_routes_searched }} routes, {{ total_raw_results }} raw results
+------------------------------
+{% for stat in search_stats %}  {{ stat.route }} ({{ stat.direction }}) · {{ stat.trip_name }}: {{ stat.raw_results }} results
+{% endfor %}{% endif %}{% endif %}
 
 YOUR BALANCES
 ------------------------------

@@ -15,7 +15,7 @@
     </noscript>
     <![endif]-->
 </head>
-<body style="margin: 0; padding: 0; background-color: #f4f4f4; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%;">
+<body style="margin: 0; padding: 0; background-color: #f4f4f4; font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 16px; color: #333333; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%;">
 
 <!-- Outer wrapper -->
 <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #f4f4f4;">
@@ -29,12 +29,12 @@
 <td style="background-color: #0066cc; padding: 24px 30px;">
     <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
     <tr>
-        <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 22px; font-weight: bold; color: #ffffff; line-height: 1.3;">
+        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 22px; font-weight: bold; color: #ffffff; line-height: 1.3;">
             Points Deal Finder
         </td>
     </tr>
     <tr>
-        <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 14px; color: #cce0ff; padding-top: 4px;">
+        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 14px; color: #cce0ff; padding-top: 4px;">
             {{ digest_date }} Evening Digest
         </td>
     </tr>
@@ -48,7 +48,7 @@
 <td style="padding: 20px 30px 10px 30px;">
     <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
     <tr>
-        <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 16px; font-weight: bold; color: #333333; padding-bottom: 12px; border-bottom: 2px solid #0066cc;">
+        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 16px; font-weight: bold; color: #333333; padding-bottom: 12px; border-bottom: 2px solid #0066cc;">
             Transfer Bonus Alerts
         </td>
     </tr>
@@ -62,12 +62,12 @@
         <td style="padding: 10px 14px; background-color: {{ '#fff5f5' if category == 'expiring_soon' else '#f0f8ff' if category == 'active' else '#f0fff0' }}; border-left: 4px solid {{ color }}; border-radius: 4px;">
             <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
             <tr>
-                <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 11px; font-weight: bold; color: {{ color }}; text-transform: uppercase; letter-spacing: 0.5px;">
+                <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 11px; font-weight: bold; color: {{ color }}; text-transform: uppercase; letter-spacing: 0.5px;">
                     {{ label }}
                 </td>
             </tr>
             <tr>
-                <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 15px; color: #333333; padding-top: 4px;">
+                <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 15px; color: #333333; padding-top: 4px;">
                     {{ bonus.source_program | replace('_', ' ') | title }} → {{ bonus.target_program | replace('_', ' ') | title }}:
                     <strong>+{{ (bonus.bonus_percentage * 100) | int }}% bonus</strong>
                     {% if bonus.end_date %}
@@ -77,7 +77,7 @@
             </tr>
             {% if bonus.notes %}
             <tr>
-                <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 13px; color: #666666; padding-top: 2px;">
+                <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 13px; color: #666666; padding-top: 2px;">
                     {{ bonus.notes }}
                 </td>
             </tr>
@@ -98,7 +98,7 @@
 <td style="padding: 20px 30px 10px 30px;">
     <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
     <tr>
-        <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 16px; font-weight: bold; color: #333333; padding-bottom: 12px; border-bottom: 2px solid #0066cc;">
+        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 16px; font-weight: bold; color: #333333; padding-bottom: 12px; border-bottom: 2px solid #0066cc;">
             {% if total_deals > 0 %}
             Top {{ total_deals }} Deal{{ 's' if total_deals != 1 else '' }} Tonight
             {% else %}
@@ -122,7 +122,7 @@
         <td style="background-color: {{ '#e8f5e9' if deal.score >= 80 else '#fff8e1' if deal.score >= 60 else '#f5f5f5' }}; padding: 12px 16px;">
             <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
             <tr>
-                <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 14px; color: #333333;">
+                <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 14px; color: #333333;">
                     <span style="font-size: 20px; font-weight: bold; color: {{ '#2e7d32' if deal.score >= 80 else '#f57f17' if deal.score >= 60 else '#666666' }};">{{ deal.score }}</span>
                     <span style="color: #999999; font-size: 12px; padding-left: 4px;">/ 100</span>
                     <span style="padding-left: 12px; font-size: 16px; font-weight: bold;">{{ deal.airline_name }}</span>
@@ -132,7 +132,7 @@
                 </td>
             </tr>
             <tr>
-                <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 12px; padding-top: 4px;">
+                <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 12px; padding-top: 4px;">
                     {% if deal.direction_label %}
                     <span style="display: inline-block; background-color: {{ '#0066cc' if deal.direction == 'outbound' else '#6a1b9a' }}; color: #ffffff; font-size: 10px; font-weight: bold; padding: 2px 8px; border-radius: 3px; text-transform: uppercase; letter-spacing: 0.5px;">{{ deal.direction_label }}</span>
                     {% endif %}
@@ -157,10 +157,10 @@
         <td style="padding: 14px 16px 8px 16px;">
             <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
             <tr>
-                <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 18px; font-weight: bold; color: #0066cc;">
+                <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 18px; font-weight: bold; color: #0066cc;">
                     {{ deal.availability.origin }} → {{ deal.availability.destination }}
                 </td>
-                <td align="right" style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 14px; color: #666666;">
+                <td align="right" style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 14px; color: #666666;">
                     {{ deal.availability.departure_date.strftime('%b %d, %Y') }}
                 </td>
             </tr>
@@ -173,7 +173,7 @@
         <td style="padding: 0 16px 10px 16px;">
             <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
             <tr>
-                <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 14px; color: #666666;">
+                <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 14px; color: #666666;">
                     {% if deal.availability.num_connections == 0 %}
                     Nonstop
                     {% else %}
@@ -192,7 +192,7 @@
             </tr>
             {% if deal.availability.operating_carriers %}
             <tr>
-                <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 12px; color: #999999; padding-top: 2px;">
+                <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 12px; color: #999999; padding-top: 2px;">
                     Operated by: {{ deal.availability.operating_carriers | join(', ') }}
                 </td>
             </tr>
@@ -206,18 +206,18 @@
         <td style="padding: 10px 16px; background-color: #fafafa; border-top: 1px solid #eee;">
             <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
             <tr>
-                <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 14px; color: #666666; padding-bottom: 4px;">
+                <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 14px; color: #666666; padding-bottom: 4px;">
                     Award price: {{ '{:,}'.format(deal.availability.points_cost) }} {{ deal.availability.source }} points/person
                 </td>
             </tr>
             <tr>
-                <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 16px; font-weight: bold; color: #0066cc;">
+                <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 16px; font-weight: bold; color: #0066cc;">
                     YOUR COST: {{ '{:,}'.format(deal.best_path.points_needed_per_person) }} {{ deal.best_path.source_display_name }}/person
                 </td>
             </tr>
             {% if deal.best_path.has_active_bonus and deal.best_path.bonus %}
             <tr>
-                <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 13px; color: #009933; padding-top: 2px;">
+                <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 13px; color: #009933; padding-top: 2px;">
                     +{{ (deal.best_path.bonus.bonus_percentage * 100) | int }}% transfer bonus active
                     {% if deal.best_path.bonus.days_remaining is not none %}
                     — {{ deal.best_path.bonus.days_remaining }} days remaining
@@ -226,7 +226,7 @@
             </tr>
             {% endif %}
             <tr>
-                <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 14px; color: #333333; padding-top: 6px;">
+                <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 14px; color: #333333; padding-top: 6px;">
                     Total for {{ travelers }}: <strong>{{ '{:,}'.format(deal.best_path.points_needed_total) }} points</strong>
                     {% if deal.best_path.affordable_both %}
                     <span style="color: #2e7d32; font-weight: bold;"> ✓ You can book this</span>
@@ -240,7 +240,7 @@
             </tr>
             {% if deal.cpp_value %}
             <tr>
-                <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 13px; color: {{ '#2e7d32' if deal.cpp_value >= 3.0 else '#666666' }}; padding-top: 4px;">
+                <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 13px; color: {{ '#2e7d32' if deal.cpp_value >= 3.0 else '#666666' }}; padding-top: 4px;">
                     {% if deal.cash_price_usd %}Cash ~${{ '{:,.0f}'.format(deal.cash_price_usd) }} → {% endif %}{{ deal.cpp_value }} cpp value
                     {% if deal.cpp_value >= 3.0 %} — Excellent{% elif deal.cpp_value >= 2.0 %} — Good{% endif %}
                 </td>
@@ -256,13 +256,13 @@
         <td style="padding: 8px 16px; border-top: 1px solid #eee;">
             <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
             <tr>
-                <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 12px; color: #999999; padding-bottom: 4px;">
+                <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 12px; color: #999999; padding-bottom: 4px;">
                     Other transfer paths:
                 </td>
             </tr>
             {% for path in deal.all_paths[1:3] %}
             <tr>
-                <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 13px; color: #666666; padding: 1px 0;">
+                <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 13px; color: #666666; padding: 1px 0;">
                     {{ '{:,}'.format(path.points_needed_per_person) }} {{ path.source_display_name }}
                     {% if path.has_active_bonus %}<span style="color: #009933;">(bonus)</span>{% endif %}
                     {% if path.affordable_both %}<span style="color: #2e7d32;">✓</span>{% endif %}
@@ -284,7 +284,7 @@
                 <td style="padding: 12px 16px; background-color: #fff8e1;">
                     <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
                     <tr>
-                        <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 14px; font-weight: bold; color: #e65100;">
+                        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 14px; font-weight: bold; color: #e65100;">
                             Layover: {{ la.city }} ({{ la.airport }}) — {{ la.duration_hours | round(1) }}h
                         </td>
                     </tr>
@@ -295,20 +295,20 @@
                         <td style="padding-top: 8px;">
                             <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
                             <tr>
-                                <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 13px; font-weight: bold; color: #333333; padding-bottom: 4px;">
+                                <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 13px; font-weight: bold; color: #333333; padding-bottom: 4px;">
                                     3-Star+ Hotels
                                 </td>
                             </tr>
                             {% if la.airport_hotel_usd %}
                             <tr>
-                                <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 13px; color: #555555; padding: 2px 0;">
+                                <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 13px; color: #555555; padding: 2px 0;">
                                     Near airport: <strong>~${{ la.airport_hotel_usd }}/night</strong>
                                 </td>
                             </tr>
                             {% endif %}
                             {% if la.city_center_hotel_usd %}
                             <tr>
-                                <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 13px; color: #555555; padding: 2px 0;">
+                                <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 13px; color: #555555; padding: 2px 0;">
                                     City center: <strong>~${{ la.city_center_hotel_usd }}/night</strong>
                                 </td>
                             </tr>
@@ -324,20 +324,20 @@
                         <td style="padding-top: 8px;">
                             <table role="presentation" cellpadding="4" cellspacing="0" border="0" width="100%" style="border-collapse: collapse;">
                             <tr>
-                                <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 13px; font-weight: bold; color: #333333; padding-bottom: 4px;" colspan="3">
+                                <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 13px; font-weight: bold; color: #333333; padding-bottom: 4px;" colspan="3">
                                     Transit from Airport
                                 </td>
                             </tr>
                             <tr style="background-color: #f5f0e0;">
-                                <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 12px; font-weight: bold; color: #666666; padding: 4px 8px; border-bottom: 1px solid #e0d8c0;">Mode</td>
-                                <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 12px; font-weight: bold; color: #666666; padding: 4px 8px; border-bottom: 1px solid #e0d8c0;">Cost</td>
-                                <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 12px; font-weight: bold; color: #666666; padding: 4px 8px; border-bottom: 1px solid #e0d8c0;">Time</td>
+                                <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 12px; font-weight: bold; color: #666666; padding: 4px 8px; border-bottom: 1px solid #e0d8c0;">Mode</td>
+                                <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 12px; font-weight: bold; color: #666666; padding: 4px 8px; border-bottom: 1px solid #e0d8c0;">Cost</td>
+                                <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 12px; font-weight: bold; color: #666666; padding: 4px 8px; border-bottom: 1px solid #e0d8c0;">Time</td>
                             </tr>
                             {% for t in la.transit_options %}
                             <tr>
-                                <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 13px; color: #555555; padding: 3px 8px; border-bottom: 1px solid #f0ead8;">{{ t.mode }}</td>
-                                <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 13px; color: #555555; padding: 3px 8px; border-bottom: 1px solid #f0ead8;">~${{ t.cost_usd | int }}</td>
-                                <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 13px; color: #555555; padding: 3px 8px; border-bottom: 1px solid #f0ead8;">{{ t.time_min }}min{% if t.notes %} <span style="color: #999;">— {{ t.notes }}</span>{% endif %}</td>
+                                <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 13px; color: #555555; padding: 3px 8px; border-bottom: 1px solid #f0ead8;">{{ t.mode }}</td>
+                                <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 13px; color: #555555; padding: 3px 8px; border-bottom: 1px solid #f0ead8;">~${{ t.cost_usd | int }}</td>
+                                <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 13px; color: #555555; padding: 3px 8px; border-bottom: 1px solid #f0ead8;">{{ t.time_min }}min{% if t.notes %} <span style="color: #999;">— {{ t.notes }}</span>{% endif %}</td>
                             </tr>
                             {% endfor %}
                             </table>
@@ -348,7 +348,7 @@
                     <!-- Layover Tips -->
                     {% if la.notes %}
                     <tr>
-                        <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 13px; color: #e65100; padding-top: 8px; font-style: italic;">
+                        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 13px; color: #e65100; padding-top: 8px; font-style: italic;">
                             Tip: {{ la.notes }}
                         </td>
                     </tr>
@@ -367,18 +367,50 @@
 </tr>
 {% endfor %}
 {% else %}
-<!-- No deals message -->
+<!-- No deals message + search summary -->
 <tr>
-<td style="padding: 20px 30px;">
+<td style="padding: 20px 30px 10px 30px;">
     <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
     <tr>
-        <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 15px; color: #666666; padding: 20px; text-align: center; background-color: #f9f9f9; border-radius: 6px;">
+        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 15px; color: #666666; padding: 16px 20px; text-align: center; background-color: #f9f9f9; border-radius: 6px;">
             No business class deals matched your criteria today. We'll keep scanning!
         </td>
     </tr>
     </table>
 </td>
 </tr>
+
+{% if search_stats %}
+<!-- SEARCH SUMMARY -->
+<tr>
+<td style="padding: 10px 30px 20px 30px;">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+    <tr>
+        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 13px; font-weight: bold; color: #666666; padding-bottom: 8px; border-bottom: 1px solid #e0e0e0;">
+            What We Searched — {{ total_routes_searched }} route{{ 's' if total_routes_searched != 1 else '' }}, {{ total_raw_results }} raw result{{ 's' if total_raw_results != 1 else '' }} from seats.aero
+        </td>
+    </tr>
+    </table>
+
+    <table role="presentation" cellpadding="4" cellspacing="0" border="0" width="100%" style="border-collapse: collapse; margin-top: 8px;">
+    <tr style="background-color: #f0f4f8;">
+        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 11px; font-weight: bold; color: #666666; padding: 5px 8px; border-bottom: 1px solid #dde3ea; text-transform: uppercase; letter-spacing: 0.4px;">Route</td>
+        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 11px; font-weight: bold; color: #666666; padding: 5px 8px; border-bottom: 1px solid #dde3ea; text-transform: uppercase; letter-spacing: 0.4px;">Dir</td>
+        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 11px; font-weight: bold; color: #666666; padding: 5px 8px; border-bottom: 1px solid #dde3ea; text-transform: uppercase; letter-spacing: 0.4px;">Trip</td>
+        <td align="right" style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 11px; font-weight: bold; color: #666666; padding: 5px 8px; border-bottom: 1px solid #dde3ea; text-transform: uppercase; letter-spacing: 0.4px;">Results</td>
+    </tr>
+    {% for stat in search_stats %}
+    <tr style="background-color: {{ '#ffffff' if loop.index is odd else '#f8f9fa' }};">
+        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 13px; color: #333333; padding: 4px 8px; border-bottom: 1px solid #eef0f3; font-weight: bold;">{{ stat.route }}</td>
+        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 12px; color: {{ '#0066cc' if stat.direction == 'Outbound' else '#6a1b9a' }}; padding: 4px 8px; border-bottom: 1px solid #eef0f3;">{{ stat.direction }}</td>
+        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 12px; color: #777777; padding: 4px 8px; border-bottom: 1px solid #eef0f3;">{{ stat.trip_name }}</td>
+        <td align="right" style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 13px; color: {{ '#2e7d32' if stat.raw_results > 0 else '#999999' }}; padding: 4px 8px; border-bottom: 1px solid #eef0f3;">{{ stat.raw_results }}</td>
+    </tr>
+    {% endfor %}
+    </table>
+</td>
+</tr>
+{% endif %}
 {% endif %}
 
 <!-- BALANCES FOOTER -->
@@ -386,13 +418,13 @@
 <td style="padding: 20px 30px; border-top: 1px solid #eee;">
     <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
     <tr>
-        <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 14px; font-weight: bold; color: #333333; padding-bottom: 8px;">
+        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 14px; font-weight: bold; color: #333333; padding-bottom: 8px;">
             Your Point Balances
         </td>
     </tr>
     {% for program, balance in balances.items() %}
     <tr>
-        <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 14px; color: #555555; padding: 2px 0;">
+        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 14px; color: #555555; padding: 2px 0;">
             {{ program | replace('_', ' ') | title }}: <strong>{{ '{:,}'.format(balance) }}</strong>
         </td>
     </tr>
@@ -406,7 +438,7 @@
 <td style="background-color: #f0f0f0; padding: 16px 30px;">
     <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
     <tr>
-        <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 12px; color: #999999; text-align: center;">
+        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 12px; color: #999999; text-align: center;">
             Points Deal Finder · Data from seats.aero · Sent via Resend
         </td>
     </tr>
