@@ -1,0 +1,192 @@
+# Business class product ratings (1-10)
+# tier: preferred | neutral | deprioritized
+# These drive the airline_tier in scoring
+
+products:
+  ANA:
+    iata: NH
+    product_name: "THE Room / Inspiration of Japan"
+    rating: 9.5
+    notes: "772 THE Room is elite. 787 staggered is still excellent."
+    tier: preferred
+
+  Singapore Airlines:
+    iata: SQ
+    product_name: "1-2-1 J / Regional"
+    rating: 9.0
+    tier: preferred
+
+  Cathay Pacific:
+    iata: CX
+    product_name: "Aria Suite / Regional"
+    rating: 9.0
+    notes: "Aria Suite on A350 is outstanding. Older herringbone still solid."
+    tier: preferred
+
+  Japan Airlines:
+    iata: JL
+    product_name: "Apex Suite / Sky Suite III"
+    rating: 8.5
+    tier: preferred
+
+  Qatar Airways:
+    iata: QR
+    product_name: "Qsuite"
+    rating: 9.5
+    notes: "Best J product in the world. Doubles as buddy suite for couples."
+    tier: preferred
+
+  EVA Air:
+    iata: BR
+    product_name: "Royal Laurel"
+    rating: 8.0
+    tier: preferred
+
+  Korean Air:
+    iata: KE
+    product_name: "Prestige Suite / Prestige Class"
+    rating: 8.0
+    notes: "New Prestige Suite is great. Older angled flat is rough."
+    tier: preferred
+
+  Swiss:
+    iata: LX
+    product_name: "Business"
+    rating: 7.5
+    tier: preferred
+
+  Lufthansa:
+    iata: LH
+    product_name: "Allegris Business / Business"
+    rating: 7.5
+    notes: "Allegris is excellent. Older product is average."
+    tier: preferred
+
+  Air France:
+    iata: AF
+    product_name: "Business (new)"
+    rating: 7.5
+    notes: "New J on A350/777 is good. Older product is mediocre."
+    tier: preferred
+
+  United Airlines:
+    iata: UA
+    product_name: "Polaris"
+    rating: 7.0
+    notes: "Adequate. Window-and-door Polaris on 787-10 and 777s is decent."
+    tier: neutral
+
+  Turkish Airlines:
+    iata: TK
+    product_name: "Business Class"
+    rating: 7.5
+    notes: "Great soft product. Hard product improving with new 787s."
+    tier: neutral
+
+  British Airways:
+    iata: BA
+    product_name: "Club Suite / Club World"
+    rating: 7.5
+    notes: "Club Suite (A350) is good. Old Club World is awful."
+    tier: neutral
+
+  KLM:
+    iata: KL
+    product_name: "World Business Class"
+    rating: 6.5
+    tier: neutral
+
+  TAP Portugal:
+    iata: TP
+    product_name: "Business"
+    rating: 6.0
+    tier: neutral
+
+  Iberia:
+    iata: IB
+    product_name: "Business Plus"
+    rating: 7.0
+    tier: neutral
+
+  SAS:
+    iata: SK
+    product_name: "SAS Business"
+    rating: 6.5
+    tier: neutral
+
+  Asiana:
+    iata: OZ
+    product_name: "Business Smartium"
+    rating: 7.0
+    tier: neutral
+
+  Air Canada:
+    iata: AC
+    product_name: "Signature Suite / Signature Class"
+    rating: 6.0
+    notes: "Signature Suite on 787 is fine. Avoid older reverse herringbone."
+    tier: deprioritized
+
+  Air India:
+    iata: AI
+    product_name: "Business"
+    rating: 4.0
+    tier: deprioritized
+
+  China Southern:
+    iata: CZ
+    product_name: "Business"
+    rating: 5.0
+    tier: deprioritized
+
+  China Eastern:
+    iata: MU
+    product_name: "Business"
+    rating: 5.0
+    tier: deprioritized
+
+  Philippine Airlines:
+    iata: PR
+    product_name: "Business"
+    rating: 5.0
+    tier: deprioritized
+
+  Ethiopian Airlines:
+    iata: ET
+    product_name: "Cloud Nine Business"
+    rating: 5.5
+    tier: deprioritized
+
+  LATAM:
+    iata: LA
+    product_name: "Business"
+    rating: 6.0
+    tier: deprioritized
+
+# IATA code to name lookup (for matching seats.aero operating carrier)
+iata_lookup:
+  NH: ANA
+  SQ: Singapore Airlines
+  CX: Cathay Pacific
+  JL: Japan Airlines
+  QR: Qatar Airways
+  BR: EVA Air
+  KE: Korean Air
+  LX: Swiss
+  LH: Lufthansa
+  AF: Air France
+  UA: United Airlines
+  TK: Turkish Airlines
+  BA: British Airways
+  KL: KLM
+  TP: TAP Portugal
+  IB: Iberia
+  SK: SAS
+  OZ: Asiana
+  AC: Air Canada
+  AI: Air India
+  CZ: China Southern
+  MU: China Eastern
+  PR: Philippine Airlines
+  ET: Ethiopian Airlines
+  LA: LATAM

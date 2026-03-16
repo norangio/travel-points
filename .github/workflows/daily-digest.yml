@@ -1,0 +1,48 @@
+name: Evening Points Digest
+
+on:
+  schedule:
+    # 3:00 UTC = 7:00 PM PST (8:00 PM PDT)
+    - cron: "0 3 * * *"
+  workflow_dispatch: # manual trigger for testing
+
+jobs:
+  send-digest:
+    runs-on: ubuntu-latest
+
+    env:
+      SEATS_AERO_API_KEY: ${{ secrets.SEATS_AERO_API_KEY }}
+      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+      EMAIL_FROM_ADDRESS: onboarding@resend.dev
+      EMAIL_FROM_NAME: "Points Deal Finder"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Restore previous state
+        uses: actions/cache/restore@v4
+        with:
+          path: state/last_run.json
+          key: deal-state-
+          restore-keys: |
+            deal-state-
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install .
+
+      - name: Run digest
+        run: python -m src.main
+
+      - name: Save state for next run
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: state/last_run.json
+          key: deal-state-${{ github.run_number }}

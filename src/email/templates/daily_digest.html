@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Points Deal Finder — {{ digest_date }}</title>
+    <!--[if mso]>
+    <noscript>
+        <xml>
+            <o:OfficeDocumentSettings>
+                <o:PixelsPerInch>96</o:PixelsPerInch>
+            </o:OfficeDocumentSettings>
+        </xml>
+    </noscript>
+    <![endif]-->
+</head>
+<body style="margin: 0; padding: 0; background-color: #f4f4f4; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%;">
+
+<!-- Outer wrapper -->
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #f4f4f4;">
+<tr><td align="center" style="padding: 20px 10px;">
+
+<!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600"><tr><td><![endif]-->
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width: 600px; background-color: #ffffff;">
+
+<!-- HEADER -->
+<tr>
+<td style="background-color: #0066cc; padding: 24px 30px;">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+    <tr>
+        <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 22px; font-weight: bold; color: #ffffff; line-height: 1.3;">
+            Points Deal Finder
+        </td>
+    </tr>
+    <tr>
+        <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 14px; color: #cce0ff; padding-top: 4px;">
+            {{ digest_date }} Evening Digest
+        </td>
+    </tr>
+    </table>
+</td>
+</tr>
+
+{% if has_bonuses %}
+<!-- TRANSFER BONUS ALERTS -->
+<tr>
+<td style="padding: 20px 30px 10px 30px;">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+    <tr>
+        <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 16px; font-weight: bold; color: #333333; padding-bottom: 12px; border-bottom: 2px solid #0066cc;">
+            Transfer Bonus Alerts
+        </td>
+    </tr>
+    </table>
+
+    {% for category, label, color in [('expiring_soon', 'EXPIRING SOON', '#cc3300'), ('new', 'NEW', '#009933'), ('active', 'ACTIVE', '#0066cc')] %}
+    {% if bonus_alerts[category] %}
+    {% for bonus in bonus_alerts[category] %}
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top: 10px;">
+    <tr>
+        <td style="padding: 10px 14px; background-color: {{ '#fff5f5' if category == 'expiring_soon' else '#f0f8ff' if category == 'active' else '#f0fff0' }}; border-left: 4px solid {{ color }}; border-radius: 4px;">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+            <tr>
+                <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 11px; font-weight: bold; color: {{ color }}; text-transform: uppercase; letter-spacing: 0.5px;">
+                    {{ label }}
+                </td>
+            </tr>
+            <tr>
+                <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 15px; color: #333333; padding-top: 4px;">
+                    {{ bonus.source_program | replace('_', ' ') | title }} → {{ bonus.target_program | replace('_', ' ') | title }}:
+                    <strong>+{{ (bonus.bonus_percentage * 100) | int }}% bonus</strong>
+                    {% if bonus.end_date %}
+                    <span style="color: #666666;">(ends {{ bonus.end_date.strftime('%b %d') }}{% if bonus.days_remaining is not none %} — {{ bonus.days_remaining }} days{% endif %})</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% if bonus.notes %}
+            <tr>
+                <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 13px; color: #666666; padding-top: 2px;">
+                    {{ bonus.notes }}
+                </td>
+            </tr>
+            {% endif %}
+            </table>
+        </td>
+    </tr>
+    </table>
+    {% endfor %}
+    {% endif %}
+    {% endfor %}
+</td>
+</tr>
+{% endif %}
+
+<!-- DEAL COUNT SUMMARY -->
+<tr>
+<td style="padding: 20px 30px 10px 30px;">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+    <tr>
+        <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 16px; font-weight: bold; color: #333333; padding-bottom: 12px; border-bottom: 2px solid #0066cc;">
+            {% if total_deals > 0 %}
+            Top {{ total_deals }} Deal{{ 's' if total_deals != 1 else '' }} Tonight
+            {% else %}
+            No Deals Found Today
+            {% endif %}
+        </td>
+    </tr>
+    </table>
+</td>
+</tr>
+
+{% if deals %}
+<!-- DEAL CARDS -->
+{% for deal in deals %}
+<tr>
+<td style="padding: 10px 30px;">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border: 1px solid #e0e0e0; border-radius: 6px; overflow: hidden;">
+
+    <!-- Deal Header: Score + Airline -->
+    <tr>
+        <td style="background-color: {{ '#e8f5e9' if deal.score >= 80 else '#fff8e1' if deal.score >= 60 else '#f5f5f5' }}; padding: 12px 16px;">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+            <tr>
+                <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 14px; color: #333333;">
+                    <span style="font-size: 20px; font-weight: bold; color: {{ '#2e7d32' if deal.score >= 80 else '#f57f17' if deal.score >= 60 else '#666666' }};">{{ deal.score }}</span>
+                    <span style="color: #999999; font-size: 12px; padding-left: 4px;">/ 100</span>
+                    <span style="padding-left: 12px; font-size: 16px; font-weight: bold;">{{ deal.airline_name }}</span>
+                    {% if deal.product_name %}
+                    <span style="color: #666666; font-size: 13px;"> &ldquo;{{ deal.product_name }}&rdquo;</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% if deal.airline_rating %}
+            <tr>
+                <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 12px; color: #888888; padding-top: 2px;">
+                    Product rating: {{ deal.airline_rating }}/10
+                    {% if deal.trip_name %} | {{ deal.trip_name }}{% endif %}
+                </td>
+            </tr>
+            {% endif %}
+            </table>
+        </td>
+    </tr>
+
+    <!-- Route + Date -->
+    <tr>
+        <td style="padding: 14px 16px 8px 16px;">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+            <tr>
+                <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 18px; font-weight: bold; color: #0066cc;">
+                    {{ deal.availability.origin }} → {{ deal.availability.destination }}
+                </td>
+                <td align="right" style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 14px; color: #666666;">
+                    {{ deal.availability.departure_date.strftime('%b %d, %Y') }}
+                </td>
+            </tr>
+            </table>
+        </td>
+    </tr>
+
+    <!-- Routing Info -->
+    <tr>
+        <td style="padding: 0 16px 10px 16px;">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+            <tr>
+                <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 14px; color: #666666;">
+                    {% if deal.availability.num_connections == 0 %}
+                    Nonstop
+                    {% else %}
+                    {{ deal.availability.num_connections }} stop{{ 's' if deal.availability.num_connections > 1 else '' }}
+                    {% if deal.availability.max_layover_hours %}
+                     · {{ deal.availability.max_layover_hours }}h max layover
+                    {% endif %}
+                    {% endif %}
+                    {% if deal.availability.total_travel_hours %}
+                     · {{ deal.availability.total_travel_hours }}h total
+                    {% endif %}
+                    {% if deal.availability.seats_available %}
+                     · {{ deal.availability.seats_available }} seat{{ 's' if deal.availability.seats_available != 1 else '' }}
+                    {% endif %}
+                </td>
+            </tr>
+            {% if deal.availability.operating_carriers %}
+            <tr>
+                <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 12px; color: #999999; padding-top: 2px;">
+                    Operated by: {{ deal.availability.operating_carriers | join(', ') }}
+                </td>
+            </tr>
+            {% endif %}
+            </table>
+        </td>
+    </tr>
+
+    <!-- Cost Breakdown -->
+    <tr>
+        <td style="padding: 10px 16px; background-color: #fafafa; border-top: 1px solid #eee;">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+            <tr>
+                <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 14px; color: #666666; padding-bottom: 4px;">
+                    Award price: {{ '{:,}'.format(deal.availability.points_cost) }} {{ deal.availability.source }} points/person
+                </td>
+            </tr>
+            <tr>
+                <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 16px; font-weight: bold; color: #0066cc;">
+                    YOUR COST: {{ '{:,}'.format(deal.best_path.points_needed_per_person) }} {{ deal.best_path.source_display_name }}/person
+                </td>
+            </tr>
+            {% if deal.best_path.has_active_bonus and deal.best_path.bonus %}
+            <tr>
+                <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 13px; color: #009933; padding-top: 2px;">
+                    +{{ (deal.best_path.bonus.bonus_percentage * 100) | int }}% transfer bonus active
+                    {% if deal.best_path.bonus.days_remaining is not none %}
+                    — {{ deal.best_path.bonus.days_remaining }} days remaining
+                    {% endif %}
+                </td>
+            </tr>
+            {% endif %}
+            <tr>
+                <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 14px; color: #333333; padding-top: 6px;">
+                    Total for {{ travelers }}: <strong>{{ '{:,}'.format(deal.best_path.points_needed_total) }} points</strong>
+                    {% if deal.best_path.affordable_both %}
+                    <span style="color: #2e7d32; font-weight: bold;"> ✓ You can book this</span>
+                    <span style="color: #666666; font-size: 13px;"> ({{ '{:,}'.format(deal.best_path.balance_remaining) }} remaining)</span>
+                    {% elif deal.best_path.affordable_one %}
+                    <span style="color: #f57f17;"> ⚠ Can book 1, not both</span>
+                    {% else %}
+                    <span style="color: #cc3300;"> ✗ Need more points</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% if deal.cpp_value %}
+            <tr>
+                <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 13px; color: {{ '#2e7d32' if deal.cpp_value >= 3.0 else '#666666' }}; padding-top: 4px;">
+                    {% if deal.cash_price_usd %}Cash ~${{ '{:,.0f}'.format(deal.cash_price_usd) }} → {% endif %}{{ deal.cpp_value }} cpp value
+                    {% if deal.cpp_value >= 3.0 %} — Excellent{% elif deal.cpp_value >= 2.0 %} — Good{% endif %}
+                </td>
+            </tr>
+            {% endif %}
+            </table>
+        </td>
+    </tr>
+
+    <!-- Alternative Transfer Paths (if more than 1) -->
+    {% if deal.all_paths | length > 1 %}
+    <tr>
+        <td style="padding: 8px 16px; border-top: 1px solid #eee;">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+            <tr>
+                <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 12px; color: #999999; padding-bottom: 4px;">
+                    Other transfer paths:
+                </td>
+            </tr>
+            {% for path in deal.all_paths[1:3] %}
+            <tr>
+                <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 13px; color: #666666; padding: 1px 0;">
+                    {{ '{:,}'.format(path.points_needed_per_person) }} {{ path.source_display_name }}
+                    {% if path.has_active_bonus %}<span style="color: #009933;">(bonus)</span>{% endif %}
+                    {% if path.affordable_both %}<span style="color: #2e7d32;">✓</span>{% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+            </table>
+        </td>
+    </tr>
+    {% endif %}
+
+    <!-- LAYOVER ANALYSIS (for long layovers) -->
+    {% if deal.layover_analyses %}
+    {% for la in deal.layover_analyses %}
+    <tr>
+        <td style="padding: 0;">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-top: 2px solid #ff9800;">
+            <tr>
+                <td style="padding: 12px 16px; background-color: #fff8e1;">
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                    <tr>
+                        <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 14px; font-weight: bold; color: #e65100;">
+                            Layover: {{ la.city }} ({{ la.airport }}) — {{ la.duration_hours | round(1) }}h
+                        </td>
+                    </tr>
+
+                    <!-- Hotel Info -->
+                    {% if la.airport_hotel_usd or la.city_center_hotel_usd %}
+                    <tr>
+                        <td style="padding-top: 8px;">
+                            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                            <tr>
+                                <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 13px; font-weight: bold; color: #333333; padding-bottom: 4px;">
+                                    3-Star+ Hotels
+                                </td>
+                            </tr>
+                            {% if la.airport_hotel_usd %}
+                            <tr>
+                                <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 13px; color: #555555; padding: 2px 0;">
+                                    Near airport: <strong>~${{ la.airport_hotel_usd }}/night</strong>
+                                </td>
+                            </tr>
+                            {% endif %}
+                            {% if la.city_center_hotel_usd %}
+                            <tr>
+                                <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 13px; color: #555555; padding: 2px 0;">
+                                    City center: <strong>~${{ la.city_center_hotel_usd }}/night</strong>
+                                </td>
+                            </tr>
+                            {% endif %}
+                            </table>
+                        </td>
+                    </tr>
+                    {% endif %}
+
+                    <!-- Transit Options -->
+                    {% if la.transit_options %}
+                    <tr>
+                        <td style="padding-top: 8px;">
+                            <table role="presentation" cellpadding="4" cellspacing="0" border="0" width="100%" style="border-collapse: collapse;">
+                            <tr>
+                                <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 13px; font-weight: bold; color: #333333; padding-bottom: 4px;" colspan="3">
+                                    Transit from Airport
+                                </td>
+                            </tr>
+                            <tr style="background-color: #f5f0e0;">
+                                <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 12px; font-weight: bold; color: #666666; padding: 4px 8px; border-bottom: 1px solid #e0d8c0;">Mode</td>
+                                <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 12px; font-weight: bold; color: #666666; padding: 4px 8px; border-bottom: 1px solid #e0d8c0;">Cost</td>
+                                <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 12px; font-weight: bold; color: #666666; padding: 4px 8px; border-bottom: 1px solid #e0d8c0;">Time</td>
+                            </tr>
+                            {% for t in la.transit_options %}
+                            <tr>
+                                <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 13px; color: #555555; padding: 3px 8px; border-bottom: 1px solid #f0ead8;">{{ t.mode }}</td>
+                                <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 13px; color: #555555; padding: 3px 8px; border-bottom: 1px solid #f0ead8;">~${{ t.cost_usd | int }}</td>
+                                <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 13px; color: #555555; padding: 3px 8px; border-bottom: 1px solid #f0ead8;">{{ t.time_min }}min{% if t.notes %} <span style="color: #999;">— {{ t.notes }}</span>{% endif %}</td>
+                            </tr>
+                            {% endfor %}
+                            </table>
+                        </td>
+                    </tr>
+                    {% endif %}
+
+                    <!-- Layover Tips -->
+                    {% if la.notes %}
+                    <tr>
+                        <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 13px; color: #e65100; padding-top: 8px; font-style: italic;">
+                            Tip: {{ la.notes }}
+                        </td>
+                    </tr>
+                    {% endif %}
+                    </table>
+                </td>
+            </tr>
+            </table>
+        </td>
+    </tr>
+    {% endfor %}
+    {% endif %}
+
+    </table>
+</td>
+</tr>
+{% endfor %}
+{% else %}
+<!-- No deals message -->
+<tr>
+<td style="padding: 20px 30px;">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+    <tr>
+        <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 15px; color: #666666; padding: 20px; text-align: center; background-color: #f9f9f9; border-radius: 6px;">
+            No business class deals matched your criteria today. We'll keep scanning!
+        </td>
+    </tr>
+    </table>
+</td>
+</tr>
+{% endif %}
+
+<!-- BALANCES FOOTER -->
+<tr>
+<td style="padding: 20px 30px; border-top: 1px solid #eee;">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+    <tr>
+        <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 14px; font-weight: bold; color: #333333; padding-bottom: 8px;">
+            Your Point Balances
+        </td>
+    </tr>
+    {% for program, balance in balances.items() %}
+    <tr>
+        <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 14px; color: #555555; padding: 2px 0;">
+            {{ program | replace('_', ' ') | title }}: <strong>{{ '{:,}'.format(balance) }}</strong>
+        </td>
+    </tr>
+    {% endfor %}
+    </table>
+</td>
+</tr>
+
+<!-- FOOTER -->
+<tr>
+<td style="background-color: #f0f0f0; padding: 16px 30px;">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+    <tr>
+        <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 12px; color: #999999; text-align: center;">
+            Points Deal Finder · Data from seats.aero · Sent via Resend
+        </td>
+    </tr>
+    </table>
+</td>
+</tr>
+
+</table>
+<!--[if mso]></td></tr></table><![endif]-->
+
+</td></tr>
+</table>
+
+</body>
+</html>

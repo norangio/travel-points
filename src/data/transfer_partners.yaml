@@ -1,0 +1,117 @@
+# Transfer partner map: credit card programs → airline/hotel loyalty programs
+# rate: base transfer ratio (1.0 = 1:1)
+# instant: whether transfer is instant or takes 1-2 days
+# seats_aero_source: the source name used in seats.aero API queries
+
+chase_ur:
+  display_name: "Chase Ultimate Rewards"
+  partners:
+    united:
+      rate: 1.0
+      instant: true
+      seats_aero_source: "united"
+    avios:
+      rate: 1.0
+      instant: true
+      seats_aero_source: "virginatlantic"
+      notes: "Books BA, Aer Lingus, Iberia, Qatar via Avios"
+    flying_blue:
+      rate: 1.0
+      instant: true
+      seats_aero_source: "flyingblue"
+      notes: "Air France/KLM"
+    singapore:
+      rate: 1.0
+      instant: true
+      seats_aero_source: "singapore"
+    aeroplan:
+      rate: 1.0
+      instant: true
+      seats_aero_source: "aeroplan"
+    virgin_atlantic:
+      rate: 1.0
+      instant: true
+      seats_aero_source: "virginatlantic"
+    hyatt:
+      rate: 1.0
+      instant: true
+      seats_aero_source: null
+      notes: "Hotel program, no seats.aero source"
+    southwest:
+      rate: 1.0
+      instant: true
+      seats_aero_source: null
+    marriott:
+      rate: 1.0
+      instant: false
+      seats_aero_source: null
+    ihg:
+      rate: 1.0
+      instant: true
+      seats_aero_source: null
+    emirates:
+      rate: 1.0
+      instant: true
+      seats_aero_source: "emirates"
+
+capital_one:
+  display_name: "Capital One Miles"
+  partners:
+    flying_blue:
+      rate: 1.0
+      instant: true
+      seats_aero_source: "flyingblue"
+    turkish:
+      rate: 1.0
+      instant: true
+      seats_aero_source: "turkishmiles"
+    avios:
+      rate: 1.0
+      instant: true
+      seats_aero_source: "virginatlantic"
+    singapore:
+      rate: 1.0
+      instant: true
+      seats_aero_source: "singapore"
+    avianca:
+      rate: 1.0
+      instant: true
+      seats_aero_source: "avianca"
+    cathay:
+      rate: 1.0
+      instant: true
+      seats_aero_source: "cathay"
+    finnair:
+      rate: 1.0
+      instant: true
+      seats_aero_source: "finnair"
+    etihad:
+      rate: 1.0
+      instant: true
+      seats_aero_source: "etihad"
+    emirates:
+      rate: 1.0
+      instant: true
+      seats_aero_source: "emirates"
+    qantas:
+      rate: 1.0
+      instant: true
+      seats_aero_source: "qantas"
+    tap:
+      rate: 1.0
+      instant: true
+      seats_aero_source: null
+    wyndham:
+      rate: 1.0
+      instant: true
+      seats_aero_source: null
+
+united_miles:
+  display_name: "United MileagePlus"
+  partners:
+    united:
+      rate: 1.0
+      instant: true
+      direct: true
+      seats_aero_source: "united"
+      notes: "Direct redemption, also books Star Alliance partners"
