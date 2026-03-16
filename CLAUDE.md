@@ -10,7 +10,7 @@
 - **Scoring**: `src/scoring/engine.py` (composite 0-100 score), `transfer_paths.py` (effective cost calc), `airline_quality.py` (product tier lookups)
 - **Layover analysis**: `src/layover/analyzer.py` — for layovers >4h, looks up hotel costs (3-star+ near airport & city center) and transit options from `src/data/layover_cities.yaml`
 - **Email**: `src/email/builder.py` (Jinja2 rendering), `sender.py` (Resend API), templates in `src/email/templates/`
-- **State**: `src/state.py` — JSON-based dedup across runs via GitHub Actions cache
+- **State**: `src/state.py` — deal history tracking (first_seen dates, NOT suppression). Manual `workflow_dispatch` triggers skip state saves to avoid polluting history during testing
 
 ## Static Data Files
 
@@ -28,16 +28,40 @@ Matches the Morning Brief email styling from email-reports:
 
 ## Configuration
 
-- `config.yaml` — user config (balances, trips, origins, routing filters, email recipients) — gitignored
-- `config.example.yaml` — template with example values
+- `config.yaml` — user config (balances, trips, origins, routing filters, email recipients) — **committed** (repo is private)
+- `config.example.yaml` — template with comments explaining format
 - `.env` — secrets (SEATS_AERO_API_KEY, RESEND_API_KEY) — gitignored
 - GitHub Actions secrets: SEATS_AERO_API_KEY, RESEND_API_KEY
+
+## Trip Config Format
+
+Trips use separate `outbound` + `return` date windows. The system searches both directions independently and labels deals in the email:
+
+```yaml
+trips:
+  - name: "Portugal/Spain Summer 2026"
+    destinations:
+      - region: europe
+        preferred_airports: [BCN, LIS, MAD, LHR, CDG]
+    outbound:
+      earliest: "2026-06-04"
+      latest: "2026-06-11"
+    return:
+      earliest: "2026-06-18"
+      latest: "2026-06-28"
+    flexibility_days: 3
+```
+
+- Outbound: searches origin airports → destination airports
+- Return: searches destination airports → origin airports (reversed)
+- Legacy `date_range` format still works (outbound only)
 
 ## Deployment — GitHub Actions
 
 - **Workflow**: `.github/workflows/daily-digest.yml`
 - **Schedule**: 3:00 UTC daily (7:00 PM PST) via cron, plus manual `workflow_dispatch`
-- **State persistence**: GitHub Actions cache (deal IDs for cross-day dedup)
+- **State persistence**: GitHub Actions cache (deal history with first_seen dates)
+- **Manual triggers**: `workflow_dispatch` does NOT save state — safe to test anytime without affecting history
 - **Required secrets**: `SEATS_AERO_API_KEY`, `RESEND_API_KEY`
 
 ## Running Locally
@@ -58,6 +82,10 @@ Implemented:
 - [x] Layover analysis for long layovers (>4h) — hotel costs + transit
 - [x] Email template + Resend integration (matching Morning Brief style)
 - [x] GitHub Actions cron (7 PM PST)
+- [x] Round-trip search (outbound + return with separate date windows)
+- [x] Deal history tracking (first_seen dates, freshness badges: NEW / Day N)
+- [x] Direction labels (Outbound / Return) in email
+- [x] Manual trigger safety (workflow_dispatch skips state writes)
 
 Not yet implemented:
 - [ ] Transfer bonus scrapers (FrequentMiler, TPG, AwardWallet) — Phase 2

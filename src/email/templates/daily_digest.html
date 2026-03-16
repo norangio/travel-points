@@ -117,7 +117,7 @@
 <td style="padding: 10px 30px;">
     <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border: 1px solid #e0e0e0; border-radius: 6px; overflow: hidden;">
 
-    <!-- Deal Header: Score + Airline -->
+    <!-- Deal Header: Score + Airline + Badges -->
     <tr>
         <td style="background-color: {{ '#e8f5e9' if deal.score >= 80 else '#fff8e1' if deal.score >= 60 else '#f5f5f5' }}; padding: 12px 16px;">
             <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
@@ -131,14 +131,23 @@
                     {% endif %}
                 </td>
             </tr>
-            {% if deal.airline_rating %}
             <tr>
-                <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 12px; color: #888888; padding-top: 2px;">
-                    Product rating: {{ deal.airline_rating }}/10
-                    {% if deal.trip_name %} | {{ deal.trip_name }}{% endif %}
+                <td style="font-family: Calibri, 'Trebuchet MS', Arial, sans-serif; font-size: 12px; padding-top: 4px;">
+                    {% if deal.direction_label %}
+                    <span style="display: inline-block; background-color: {{ '#0066cc' if deal.direction == 'outbound' else '#6a1b9a' }}; color: #ffffff; font-size: 10px; font-weight: bold; padding: 2px 8px; border-radius: 3px; text-transform: uppercase; letter-spacing: 0.5px;">{{ deal.direction_label }}</span>
+                    {% endif %}
+                    <span style="display: inline-block; background-color: {{ '#2e7d32' if deal.is_new else '#ff8f00' }}; color: #ffffff; font-size: 10px; font-weight: bold; padding: 2px 8px; border-radius: 3px; text-transform: uppercase; letter-spacing: 0.5px; margin-left: 4px;">{{ deal.freshness_label }}</span>
+                    {% if deal.airline_rating %}
+                    <span style="color: #888888; padding-left: 8px;">{{ deal.airline_rating }}/10</span>
+                    {% endif %}
+                    {% if deal.trip_name %}
+                    <span style="color: #888888;"> · {{ deal.trip_name }}</span>
+                    {% endif %}
+                    {% if deal.first_seen and not deal.is_new %}
+                    <span style="color: #999999;"> · First seen {{ deal.first_seen.strftime('%b %d') }}</span>
+                    {% endif %}
                 </td>
             </tr>
-            {% endif %}
             </table>
         </td>
     </tr>

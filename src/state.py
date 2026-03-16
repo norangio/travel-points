@@ -1,9 +1,19 @@
-"""State persistence — dedup across daily runs."""
+"""State persistence — deal history tracking across daily runs.
+
+Design decisions:
+- Deals are NOT suppressed on repeat days. Instead, each deal tracks the
+  date it was first seen, so the email can show "NEW" vs "Day N" badges.
+- Manual workflow_dispatch triggers do NOT write state, so testing never
+  pollutes the history.
+- State is stored as JSON in state/last_run.json and persisted via
+  GitHub Actions cache.
+"""
 
 from __future__ import annotations
 
 import json
 import logging
+import os
 from datetime import date, datetime
 from pathlib import Path
 
@@ -12,44 +22,113 @@ logger = logging.getLogger(__name__)
 STATE_DIR = Path(__file__).parent.parent / "state"
 STATE_FILE = STATE_DIR / "last_run.json"
 
+# How many days of history to keep (prune older entries)
+HISTORY_RETENTION_DAYS = 30
 
-def load_previous_deals() -> set[str]:
-    """Load deal IDs from the previous run for deduplication."""
+
+def is_manual_trigger() -> bool:
+    """Check if this run was triggered manually (workflow_dispatch)."""
+    event = os.environ.get("GITHUB_EVENT_NAME", "")
+    return event == "workflow_dispatch"
+
+
+def load_deal_history() -> dict[str, str]:
+    """
+    Load deal history: mapping of deal_key → first_seen date (ISO string).
+
+    Returns empty dict if no history exists.
+    """
     if not STATE_FILE.exists():
-        return set()
+        return {}
 
     try:
         with open(STATE_FILE) as f:
             data = json.load(f)
+        history = data.get("deal_history", {})
 
-        # Only use if from today or yesterday (stale state = no dedup)
-        run_date = data.get("run_date", "")
-        if run_date:
-            last = datetime.strptime(run_date, "%Y-%m-%d").date()
-            age = (date.today() - last).days
-            if age > 1:
-                logger.info(f"State is {age} days old, ignoring for dedup")
-                return set()
+        # Prune entries older than retention period
+        today = date.today()
+        pruned = {}
+        for key, first_seen_str in history.items():
+            try:
+                first_seen = datetime.strptime(first_seen_str, "%Y-%m-%d").date()
+                age = (today - first_seen).days
+                if age <= HISTORY_RETENTION_DAYS:
+                    pruned[key] = first_seen_str
+            except ValueError:
+                continue
 
-        return set(data.get("deal_ids", []))
+        logger.info(
+            f"Loaded deal history: {len(pruned)} active entries "
+            f"(pruned {len(history) - len(pruned)} stale)"
+        )
+        return pruned
     except Exception as e:
         logger.warning(f"Failed to load state: {e}")
-        return set()
+        return {}
 
 
-def save_state(deal_ids: list[str], api_calls_used: int = 0) -> None:
-    """Save current run state for next day's dedup."""
+def get_first_seen(deal_key: str, history: dict[str, str]) -> date | None:
+    """Get the first_seen date for a deal, or None if it's new."""
+    first_seen_str = history.get(deal_key)
+    if first_seen_str is None:
+        return None
+    try:
+        return datetime.strptime(first_seen_str, "%Y-%m-%d").date()
+    except ValueError:
+        return None
+
+
+def days_seen(deal_key: str, history: dict[str, str]) -> int:
+    """How many days has this deal been tracked? 0 = brand new."""
+    first = get_first_seen(deal_key, history)
+    if first is None:
+        return 0
+    return (date.today() - first).days
+
+
+def save_state(
+    current_deal_keys: list[str],
+    history: dict[str, str],
+    api_calls_used: int = 0,
+) -> None:
+    """
+    Save updated deal history. Merges today's deals into existing history.
+
+    Skips save entirely on manual workflow_dispatch triggers to avoid
+    polluting history with test runs.
+    """
+    if is_manual_trigger():
+        logger.info(
+            "Manual trigger detected — skipping state save to preserve history"
+        )
+        return
+
     STATE_DIR.mkdir(parents=True, exist_ok=True)
 
+    # Merge: add new deals with today's date, keep existing first_seen dates
+    today_str = date.today().isoformat()
+    updated_history = dict(history)  # copy existing
+    new_count = 0
+    for key in current_deal_keys:
+        if key not in updated_history:
+            updated_history[key] = today_str
+            new_count += 1
+
     state = {
-        "run_date": date.today().isoformat(),
-        "deal_ids": deal_ids,
+        "run_date": today_str,
+        "deal_history": updated_history,
         "api_calls_used": api_calls_used,
+        "deals_today": len(current_deal_keys),
+        "new_deals_today": new_count,
     }
 
     try:
         with open(STATE_FILE, "w") as f:
             json.dump(state, f, indent=2)
-        logger.info(f"Saved state: {len(deal_ids)} deals, {api_calls_used} API calls")
+        logger.info(
+            f"Saved state: {len(current_deal_keys)} deals today, "
+            f"{new_count} new, {len(updated_history)} total in history"
+        )
     except Exception as e:
         logger.error(f"Failed to save state: {e}")

@@ -138,11 +138,34 @@ class ScoredDeal:
 
     # For matching a trip definition
     trip_name: str = ""
+    direction: str = ""  # "outbound" or "return"
+
+    # Deal history tracking
+    first_seen: date | None = None  # when this deal was first found
+    days_tracked: int = 0  # how many days we've been seeing this deal
+    is_new: bool = True  # first time appearing
 
     @property
     def route_display(self) -> str:
         a = self.availability
         return f"{a.origin} → {a.destination}"
+
+    @property
+    def direction_label(self) -> str:
+        if self.direction == "outbound":
+            return "Outbound"
+        elif self.direction == "return":
+            return "Return"
+        return ""
+
+    @property
+    def freshness_label(self) -> str:
+        """Label for how long this deal has been tracked."""
+        if self.is_new:
+            return "NEW"
+        if self.days_tracked == 1:
+            return "Day 2"
+        return f"Day {self.days_tracked + 1}"
 
     @property
     def has_long_layover(self) -> bool:

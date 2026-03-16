@@ -1,11 +1,9 @@
 # Points Deal Finder — Configuration
-# Since the repo is private, config.yaml is committed directly.
-# This example shows the format with comments.
 
 balances:
-  chase_ur: 185000
-  capital_one: 120000
-  united_miles: 45000
+  chase_ur: 155000
+  capital_one: 267218
+  united_miles: 73000
 
 origins:
   - SAN
@@ -17,32 +15,31 @@ cabin: business  # only business class
 
 travelers: 2  # Nick + Krista — need 2 seats
 
-# Defined trips with separate outbound + return date windows
-# Both directions are searched independently and labeled in the email
+# Defined trips with outbound + return date windows
 trips:
-  - name: "Europe Fall 2026"
+  - name: "Portugal/Spain Summer 2026"
     destinations:
       - region: europe
-        preferred_airports: [LHR, CDG, FCO, BCN, LIS, AMS]
+        preferred_airports: [BCN, LIS, MAD, LHR, CDG]
     outbound:
-      earliest: "2026-09-15"
-      latest: "2026-09-30"
+      earliest: "2026-06-04"
+      latest: "2026-06-11"
     return:
-      earliest: "2026-10-15"
-      latest: "2026-11-15"
+      earliest: "2026-06-18"
+      latest: "2026-06-28"
     flexibility_days: 3
     priority: high
 
-  - name: "Asia Spring 2027"
+  - name: "Asia Winter 2027"
     destinations:
       - region: asia
-        preferred_airports: [NRT, HND, ICN, SIN, BKK, HKG]
+        preferred_airports: [NRT, HND, KIX, ICN, SIN, BKK, HKG]
     outbound:
-      earliest: "2027-03-01"
-      latest: "2027-03-15"
+      earliest: "2027-01-16"
+      latest: "2027-01-25"
     return:
-      earliest: "2027-04-01"
-      latest: "2027-05-31"
+      earliest: "2027-02-08"
+      latest: "2027-02-22"
     flexibility_days: 5
     priority: high
 
@@ -61,8 +58,8 @@ transfer_bonuses:
 # Route quality filters
 routing:
   max_connections: 1
-  max_total_layover_hours: 6
-  max_total_travel_hours: 24  # bump to 28 for Asia routes
+  max_total_layover_hours: 20
+  max_total_travel_hours: 40
 
 # Value floor — don't burn points if cash is cheap
 value_floor:
@@ -71,7 +68,7 @@ value_floor:
 # Email settings
 email:
   recipients:
-    - nick@example.com
-    - krista@example.com
+    - norangio@gmail.com
+    - krista.hakola@gmail.com
   max_deals_per_email: 15
   include_transfer_bonus_summary: true

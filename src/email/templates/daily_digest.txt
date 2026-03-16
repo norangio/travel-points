@@ -14,8 +14,8 @@ TOP {{ total_deals }} DEAL{{ 'S' if total_deals != 1 else '' }} TONIGHT
 ------------------------------
 {% for deal in deals %}
 
-{{ loop.index }}. [{{ deal.score }}] {{ deal.airline_name }} "{{ deal.product_name }}"
-   {{ deal.availability.origin }} → {{ deal.availability.destination }} | {{ deal.availability.departure_date.strftime('%b %d, %Y') }}
+{{ loop.index }}. [{{ deal.score }}] {{ deal.airline_name }} "{{ deal.product_name }}" [{{ deal.freshness_label }}]{% if deal.direction_label %} [{{ deal.direction_label }}]{% endif %}
+   {{ deal.availability.origin }} → {{ deal.availability.destination }} | {{ deal.availability.departure_date.strftime('%b %d, %Y') }}{% if deal.trip_name %} | {{ deal.trip_name }}{% endif %}{% if deal.first_seen and not deal.is_new %} | First seen {{ deal.first_seen.strftime('%b %d') }}{% endif %}
 {% if deal.availability.num_connections == 0 %}   Nonstop{% else %}   {{ deal.availability.num_connections }} stop(s), {{ deal.availability.max_layover_hours }}h max layover{% endif %}{% if deal.availability.total_travel_hours %} · {{ deal.availability.total_travel_hours }}h total{% endif %}{% if deal.availability.seats_available %} · {{ deal.availability.seats_available }} seat(s){% endif %}
 
    Award: {{ '{:,}'.format(deal.availability.points_cost) }} {{ deal.availability.source }} points/person

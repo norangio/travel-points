@@ -1,5 +1,4 @@
-# Config with secrets
-config.yaml
+# Local secrets only — config.yaml is committed (repo is private)
 .env
 
 # Python

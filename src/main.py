@@ -21,7 +21,7 @@ from src.scoring.engine import score_deal
 from src.scoring.transfer_paths import calculate_transfer_paths
 from src.sources.seats_aero import SeatsAeroClient, parse_availability
 from src.sources.transfer_bonuses import load_bonuses_from_config
-from src.state import load_previous_deals, save_state
+from src.state import days_seen, get_first_seen, load_deal_history, save_state
 
 logging.basicConfig(
     level=logging.INFO,
@@ -29,6 +29,15 @@ logging.basicConfig(
     stream=sys.stdout,
 )
 logger = logging.getLogger(__name__)
+
+
+def _make_deal_key(avail) -> str:
+    """Consistent deal key for history tracking."""
+    return (
+        f"{avail.origin}-{avail.destination}-"
+        f"{avail.departure_date}-{avail.source}-"
+        f"{avail.points_cost}"
+    )
 
 
 async def run_digest() -> None:
@@ -55,11 +64,10 @@ async def run_digest() -> None:
     bonuses = load_bonuses_from_config(config)
     logger.info(f"Loaded {len(bonuses)} active transfer bonuses")
 
-    # Step 3: Load previous state for dedup
-    previous_deal_ids = load_previous_deals()
-    logger.info(f"Previous run had {len(previous_deal_ids)} deals for dedup")
+    # Step 3: Load deal history (for first_seen tracking, NOT suppression)
+    history = load_deal_history()
 
-    # Step 4: Query seats.aero
+    # Step 4: Query seats.aero for each trip (outbound + return)
     client = SeatsAeroClient(settings.seats_aero_api_key)
     all_deals: list[ScoredDeal] = []
     api_calls = 0
@@ -68,133 +76,52 @@ async def run_digest() -> None:
         for trip in trips:
             trip_name = trip.get("name", "Unnamed Trip")
             destinations = trip.get("destinations", [])
-            date_range = trip.get("date_range", {})
-            earliest = _parse_date(date_range.get("earliest"))
-            latest = _parse_date(date_range.get("latest"))
             flex = trip.get("flexibility_days", 0)
 
-            if earliest and flex:
-                earliest = earliest - timedelta(days=flex)
-            if latest and flex:
-                latest = latest + timedelta(days=flex)
-
-            # Get all destination airports for this trip
+            # Collect destination airports
             dest_airports = []
             for dest_group in destinations:
                 dest_airports.extend(dest_group.get("preferred_airports", []))
 
-            logger.info(
-                f"Trip: {trip_name} — {len(origins)} origins × "
-                f"{len(dest_airports)} destinations"
-            )
+            # Build search legs: outbound and return
+            search_legs = _build_search_legs(trip, origins, dest_airports, flex)
 
-            for origin in origins:
-                for dest in dest_airports:
-                    # Search seats.aero
-                    results = await client.cached_search(
-                        origin=origin,
-                        destination=dest,
-                        cabin=config.get("cabin", "business"),
-                        start_date=earliest,
-                        end_date=latest,
-                    )
-                    api_calls += 1
+            for leg in search_legs:
+                logger.info(
+                    f"Trip: {trip_name} ({leg['direction']}) — "
+                    f"{len(leg['from_airports'])} origins × "
+                    f"{len(leg['to_airports'])} destinations, "
+                    f"{leg['earliest']} to {leg['latest']}"
+                )
 
-                    for raw in results:
-                        # Basic filters
-                        avail = parse_availability(raw)
-
-                        if avail.points_cost == 0:
-                            continue
-
-                        # Check seat count for travelers
-                        if avail.seats_available and avail.seats_available < 1:
-                            continue
-
-                        # Get trip detail for routing info
-                        trip_detail = await client.get_trip(avail.id)
+                for from_apt in leg["from_airports"]:
+                    for to_apt in leg["to_airports"]:
+                        results = await client.cached_search(
+                            origin=from_apt,
+                            destination=to_apt,
+                            cabin=config.get("cabin", "business"),
+                            start_date=leg["earliest"],
+                            end_date=leg["latest"],
+                        )
                         api_calls += 1
 
-                        if trip_detail:
-                            avail = parse_availability(raw, trip_detail)
-
-                        # Apply routing filters
-                        max_conn = routing_config.get("max_connections", 1)
-                        max_layover = routing_config.get(
-                            "max_total_layover_hours", 6
-                        )
-                        max_travel = routing_config.get(
-                            "max_total_travel_hours", 24
-                        )
-
-                        if avail.num_connections > max_conn:
-                            continue
-                        if (
-                            avail.max_layover_hours > max_layover
-                            and avail.max_layover_hours > 0
-                        ):
-                            continue
-                        if (
-                            avail.total_travel_hours > max_travel
-                            and avail.total_travel_hours > 0
-                        ):
-                            continue
-
-                        # Dedup
-                        deal_key = (
-                            f"{avail.origin}-{avail.destination}-"
-                            f"{avail.departure_date}-{avail.source}-"
-                            f"{avail.points_cost}"
-                        )
-                        if deal_key in previous_deal_ids:
-                            continue
-
-                        # Calculate transfer paths
-                        paths = calculate_transfer_paths(
-                            award_cost=avail.points_cost,
-                            booking_program=avail.source,
-                            balances=balances,
-                            transfer_partners=transfer_partners,
-                            active_bonuses=bonuses,
-                            travelers=travelers,
-                        )
-
-                        if not paths:
-                            continue
-
-                        best_path = paths[0]
-
-                        # Check CPP floor
-                        min_cpp = config.get("value_floor", {}).get(
-                            "min_cpp", 1.5
-                        )
-                        # (cash price lookup is Phase 3 — skip for now)
-
-                        # Airline quality
-                        (
-                            airline_name,
-                            airline_tier,
-                            airline_rating,
-                            product_name,
-                        ) = get_tier_for_carriers(avail.operating_carriers)
-
-                        # Score the deal
-                        deal = score_deal(
-                            availability=avail,
-                            best_path=best_path,
-                            all_paths=paths,
-                            airline_name=airline_name,
-                            airline_tier=airline_tier,
-                            airline_rating=airline_rating,
-                            product_name=product_name,
-                            travelers=travelers,
-                        )
-                        deal.trip_name = trip_name
-
-                        # Layover analysis for long layovers
-                        deal.layover_analyses = analyze_all_layovers(avail.layovers)
-
-                        all_deals.append(deal)
+                        for raw in results:
+                            deal = await _process_result(
+                                raw=raw,
+                                client=client,
+                                config=config,
+                                routing_config=routing_config,
+                                balances=balances,
+                                transfer_partners=transfer_partners,
+                                bonuses=bonuses,
+                                travelers=travelers,
+                                history=history,
+                                trip_name=trip_name,
+                                direction=leg["direction"],
+                            )
+                            if deal:
+                                all_deals.append(deal)
+                                api_calls += 1  # get_trip call
 
     finally:
         await client.close()
@@ -230,16 +157,182 @@ async def run_digest() -> None:
             f"Sent digest to {len(sent_ids)}/{len(recipients)} recipients"
         )
 
-    # Step 7: Persist state
-    deal_ids = [
-        f"{d.availability.origin}-{d.availability.destination}-"
-        f"{d.availability.departure_date}-{d.availability.source}-"
-        f"{d.availability.points_cost}"
-        for d in all_deals
-    ]
-    save_state(deal_ids=deal_ids, api_calls_used=api_calls)
+    # Step 7: Persist state (skipped on manual triggers)
+    all_deal_keys = [_make_deal_key(d.availability) for d in all_deals]
+    save_state(
+        current_deal_keys=all_deal_keys,
+        history=history,
+        api_calls_used=api_calls,
+    )
 
     logger.info("=== Points Deal Finder — Digest complete ===")
+
+
+def _build_search_legs(
+    trip: dict,
+    origins: list[str],
+    dest_airports: list[str],
+    flex: int,
+) -> list[dict]:
+    """
+    Build search legs for a trip. Supports two formats:
+
+    New format (outbound + return):
+        outbound: {earliest, latest}
+        return: {earliest, latest}
+
+    Legacy format (single date_range, outbound only):
+        date_range: {earliest, latest}
+    """
+    legs = []
+
+    # Check for new outbound/return format
+    outbound_cfg = trip.get("outbound")
+    return_cfg = trip.get("return")
+
+    if outbound_cfg:
+        earliest = _parse_date(outbound_cfg.get("earliest"))
+        latest = _parse_date(outbound_cfg.get("latest"))
+        if earliest and flex:
+            earliest = earliest - timedelta(days=flex)
+        if latest and flex:
+            latest = latest + timedelta(days=flex)
+
+        legs.append({
+            "direction": "outbound",
+            "from_airports": origins,
+            "to_airports": dest_airports,
+            "earliest": earliest,
+            "latest": latest,
+        })
+
+    if return_cfg:
+        earliest = _parse_date(return_cfg.get("earliest"))
+        latest = _parse_date(return_cfg.get("latest"))
+        if earliest and flex:
+            earliest = earliest - timedelta(days=flex)
+        if latest and flex:
+            latest = latest + timedelta(days=flex)
+
+        # Return = destination → origin (reversed)
+        legs.append({
+            "direction": "return",
+            "from_airports": dest_airports,
+            "to_airports": origins,
+            "earliest": earliest,
+            "latest": latest,
+        })
+
+    # Legacy fallback: single date_range = outbound only
+    if not legs:
+        date_range = trip.get("date_range", {})
+        earliest = _parse_date(date_range.get("earliest"))
+        latest = _parse_date(date_range.get("latest"))
+        if earliest and flex:
+            earliest = earliest - timedelta(days=flex)
+        if latest and flex:
+            latest = latest + timedelta(days=flex)
+
+        legs.append({
+            "direction": "outbound",
+            "from_airports": origins,
+            "to_airports": dest_airports,
+            "earliest": earliest,
+            "latest": latest,
+        })
+
+    return legs
+
+
+async def _process_result(
+    raw: dict,
+    client: SeatsAeroClient,
+    config: dict,
+    routing_config: dict,
+    balances: dict,
+    transfer_partners: dict,
+    bonuses: list,
+    travelers: int,
+    history: dict[str, str],
+    trip_name: str,
+    direction: str,
+) -> ScoredDeal | None:
+    """Process a single seats.aero result into a ScoredDeal (or None if filtered)."""
+    avail = parse_availability(raw)
+
+    if avail.points_cost == 0:
+        return None
+
+    if avail.seats_available and avail.seats_available < 1:
+        return None
+
+    # Get trip detail for routing info
+    trip_detail = await client.get_trip(avail.id)
+    if trip_detail:
+        avail = parse_availability(raw, trip_detail)
+
+    # Apply routing filters
+    max_conn = routing_config.get("max_connections", 1)
+    max_layover = routing_config.get("max_total_layover_hours", 6)
+    max_travel = routing_config.get("max_total_travel_hours", 24)
+
+    if avail.num_connections > max_conn:
+        return None
+    if avail.max_layover_hours > max_layover and avail.max_layover_hours > 0:
+        return None
+    if avail.total_travel_hours > max_travel and avail.total_travel_hours > 0:
+        return None
+
+    # Calculate transfer paths
+    paths = calculate_transfer_paths(
+        award_cost=avail.points_cost,
+        booking_program=avail.source,
+        balances=balances,
+        transfer_partners=transfer_partners,
+        active_bonuses=bonuses,
+        travelers=travelers,
+    )
+
+    if not paths:
+        return None
+
+    best_path = paths[0]
+
+    # Airline quality
+    airline_name, airline_tier, airline_rating, product_name = (
+        get_tier_for_carriers(avail.operating_carriers)
+    )
+
+    # Score the deal
+    deal = score_deal(
+        availability=avail,
+        best_path=best_path,
+        all_paths=paths,
+        airline_name=airline_name,
+        airline_tier=airline_tier,
+        airline_rating=airline_rating,
+        product_name=product_name,
+        travelers=travelers,
+    )
+    deal.trip_name = trip_name
+    deal.direction = direction
+
+    # Deal history — tag with first_seen and days tracked
+    deal_key = _make_deal_key(avail)
+    first_seen = get_first_seen(deal_key, history)
+    if first_seen:
+        deal.first_seen = first_seen
+        deal.days_tracked = days_seen(deal_key, history)
+        deal.is_new = False
+    else:
+        deal.first_seen = date.today()
+        deal.days_tracked = 0
+        deal.is_new = True
+
+    # Layover analysis for long layovers
+    deal.layover_analyses = analyze_all_layovers(avail.layovers)
+
+    return deal
 
 
 def _parse_date(val) -> date | None:
