@@ -79,11 +79,20 @@ class SeatsAeroClient:
         Get detailed trip/routing info for an availability result.
 
         This reveals segments, layovers, operating carriers.
+        The trips endpoint returns {"data": [...]}, a list of trip options.
+        We take the first one (shortest/best routing).
         """
         try:
             resp = await self.client.get(f"/trips/{availability_id}")
             resp.raise_for_status()
-            return resp.json().get("data")
+            data = resp.json().get("data")
+            if isinstance(data, list):
+                if not data:
+                    return None
+                # Take the first trip option
+                return data[0]
+            # If it's already a dict, return as-is
+            return data
         except httpx.HTTPStatusError as e:
             logger.error(f"seats.aero trip {availability_id} error: {e}")
             return None
