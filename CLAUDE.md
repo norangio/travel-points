@@ -105,6 +105,12 @@ The seats.aero Partner API uses specific field names. These were discovered via 
 - Chase does NOT transfer to Emirates or Qatar directly
 - `seats_aero_source` links each partner to what seats.aero calls that program (e.g. `"avios"`, `"flyingblue"`, `"qatar"`)
 
+## seats.aero API Documentation
+
+- **Getting Started**: https://developers.seats.aero/reference/getting-started-p
+- Pro API requires `Partner-Authorization` header with API key
+- Rate limit: ~2 req/sec (429 retry with exponential backoff implemented)
+
 ## Current Phase: Phase 1 (Foundation)
 
 Implemented:
