@@ -29,7 +29,9 @@ Layers intelligence on top of [seats.aero](https://seats.aero) Pro to answer: **
 
 ## GitHub Actions
 
-The digest runs daily at 7 PM PST via GitHub Actions cron. Required secrets:
+The digest runs daily at 6 PM Pacific. The workflow uses two UTC cron entries and
+an `America/Los_Angeles` gate so the actual run stays at 6 PM across both PST and PDT.
+Required secrets:
 - `SEATS_AERO_API_KEY`
 - `RESEND_API_KEY`
 

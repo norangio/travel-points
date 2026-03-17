@@ -60,7 +60,7 @@ trips:
 ## Deployment — GitHub Actions
 
 - **Workflow**: `.github/workflows/daily-digest.yml`
-- **Schedule**: 3:00 UTC daily (7:00 PM PST) via cron, plus manual `workflow_dispatch`
+- **Schedule**: 6:00 PM Pacific daily via cron (`01:00 UTC` in PDT, `02:00 UTC` in PST), plus manual `workflow_dispatch`
 - **State persistence**: GitHub Actions cache (deal history with first_seen dates)
 - **Manual triggers**: `workflow_dispatch` does NOT save state — safe to test anytime without affecting history
 - **Required secrets**: `SEATS_AERO_API_KEY`, `RESEND_API_KEY`
@@ -110,7 +110,8 @@ The seats.aero Partner API uses specific field names. These were discovered via 
 
 - **Getting Started**: https://developers.seats.aero/reference/getting-started-p
 - Pro API requires `Partner-Authorization` header with API key
-- Rate limit: ~2 req/sec (429 retry with exponential backoff implemented)
+- Daily quota: 1,000 API calls per calendar day, reset at midnight UTC
+- The client spaces requests, respects `Retry-After`, and retries 429s with backoff
 
 ## Current Phase: Phase 1 (Foundation)
 
@@ -130,6 +131,7 @@ Implemented:
 - [x] Transfer partners updated to match actual Chase UR + Capital One partner lists (including Qatar)
 - [x] JAirlines fallback for airline carrier extraction when trip detail unavailable
 - [x] Email shows only deal score (0-100), removed confusing airline rating (x/10)
+- [x] GitHub Actions schedule pinned to 6 PM Pacific across PST/PDT
 
 Not yet implemented:
 - [ ] Transfer bonus scrapers (FrequentMiler, TPG, AwardWallet) — Phase 2
