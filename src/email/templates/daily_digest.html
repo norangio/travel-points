@@ -137,9 +137,6 @@
                     <span style="display: inline-block; background-color: {{ '#0066cc' if deal.direction == 'outbound' else '#6a1b9a' }}; color: #ffffff; font-size: 10px; font-weight: bold; padding: 2px 8px; border-radius: 3px; text-transform: uppercase; letter-spacing: 0.5px;">{{ deal.direction_label }}</span>
                     {% endif %}
                     <span style="display: inline-block; background-color: {{ '#2e7d32' if deal.is_new else '#ff8f00' }}; color: #ffffff; font-size: 10px; font-weight: bold; padding: 2px 8px; border-radius: 3px; text-transform: uppercase; letter-spacing: 0.5px; margin-left: 4px;">{{ deal.freshness_label }}</span>
-                    {% if deal.airline_rating %}
-                    <span style="color: #888888; padding-left: 8px;">{{ deal.airline_rating }}/10</span>
-                    {% endif %}
                     {% if deal.trip_name %}
                     <span style="color: #888888;"> · {{ deal.trip_name }}</span>
                     {% endif %}

@@ -189,13 +189,21 @@ def parse_availability(raw: dict, trip_detail: dict | None = None) -> AwardAvail
     # If we have trip detail, parse segments and layovers
     if trip_detail:
         _parse_trip_detail(avail, trip_detail)
-    else:
-        # Infer from raw data if possible
-        carriers = raw.get("OperatingCarriers", raw.get("operating_carriers", ""))
-        if isinstance(carriers, str) and carriers:
-            avail.operating_carriers = [c.strip() for c in carriers.split(",")]
-        elif isinstance(carriers, list):
-            avail.operating_carriers = carriers
+
+    # Fallback: extract operating carriers from raw data if not set by trip detail
+    if not avail.operating_carriers:
+        # seats.aero raw data has per-cabin airlines: JAirlines, FAirlines, etc.
+        airlines_str = (
+            raw.get(f"{cabin_code}Airlines")
+            or raw.get("OperatingCarriers")
+            or raw.get("operating_carriers", "")
+        )
+        if isinstance(airlines_str, str) and airlines_str:
+            avail.operating_carriers = [
+                c.strip() for c in airlines_str.split(",") if c.strip()
+            ]
+        elif isinstance(airlines_str, list):
+            avail.operating_carriers = airlines_str
 
     return avail
 
@@ -204,13 +212,39 @@ _LOGGED_TRIP_KEYS = False  # one-shot trip diagnostic
 
 
 def _parse_trip_detail(avail: AwardAvailability, trip: dict) -> None:
-    """Parse trip detail response to extract segments and layovers."""
+    """Parse trip detail response to extract segments and layovers.
+
+    seats.aero trip detail uses these top-level fields:
+      Carriers, Connections, TotalDuration (minutes), DepartsAt, ArrivesAt,
+      AvailabilitySegments (NOT "Segments"), Aircraft, FlightNumbers
+    """
     global _LOGGED_TRIP_KEYS
     if not _LOGGED_TRIP_KEYS:
         logger.info(f"[DIAG] trip detail keys: {sorted(trip.keys())}")
         _LOGGED_TRIP_KEYS = True
 
-    segments_data = trip.get("Segments", trip.get("segments", []))
+    # --- Top-level trip fields (most reliable) ---
+    carriers_str = trip.get("Carriers", "")
+    if isinstance(carriers_str, str) and carriers_str:
+        avail.operating_carriers = [
+            c.strip() for c in carriers_str.split(",") if c.strip()
+        ]
+
+    connections = _parse_int(trip.get("Connections", trip.get("Stops", 0)))
+    avail.num_connections = connections
+
+    # TotalDuration is in minutes
+    total_duration_min = _parse_int(trip.get("TotalDuration", 0))
+    if total_duration_min > 0:
+        avail.total_travel_hours = round(total_duration_min / 60, 1)
+
+    # --- Parse segments: seats.aero uses "AvailabilitySegments" ---
+    segments_data = (
+        trip.get("AvailabilitySegments")
+        or trip.get("Segments")
+        or trip.get("segments")
+        or []
+    )
 
     # Log segment structure once for diagnostics
     if segments_data:
@@ -226,12 +260,14 @@ def _parse_trip_detail(avail: AwardAvailability, trip: dict) -> None:
     segments: list[FlightSegment] = []
     for seg in segments_data:
         departure_str = (
-            seg.get("DepartureTime")
+            seg.get("DepartsAt")
+            or seg.get("DepartureTime")
             or seg.get("DepartureDateTime")
             or seg.get("departure_time", "")
         )
         arrival_str = (
-            seg.get("ArrivalTime")
+            seg.get("ArrivesAt")
+            or seg.get("ArrivalTime")
             or seg.get("ArrivalDateTime")
             or seg.get("arrival_time", "")
         )
@@ -244,22 +280,22 @@ def _parse_trip_detail(avail: AwardAvailability, trip: dict) -> None:
             duration = (arr_dt - dep_dt).total_seconds() / 3600
 
         carrier = (
-            seg.get("OperatingCarrier")
+            seg.get("Carrier")
+            or seg.get("OperatingCarrier")
             or seg.get("OperatingAirline")
-            or seg.get("operating_carrier")
-            or seg.get("Carrier")
-            or seg.get("AirlineCode", "")
+            or seg.get("AirlineCode")
+            or seg.get("operating_carrier", "")
         )
 
         segment = FlightSegment(
             origin=(
-                seg.get("Origin")
-                or seg.get("OriginAirport")
+                seg.get("OriginAirport")
+                or seg.get("Origin")
                 or seg.get("origin", "")
             ),
             destination=(
-                seg.get("Destination")
-                or seg.get("DestinationAirport")
+                seg.get("DestinationAirport")
+                or seg.get("Destination")
                 or seg.get("destination", "")
             ),
             operating_carrier=carrier,
@@ -275,14 +311,19 @@ def _parse_trip_detail(avail: AwardAvailability, trip: dict) -> None:
         segments.append(segment)
 
     avail.segments = segments
-    avail.operating_carriers = list(
-        {s.operating_carrier for s in segments if s.operating_carrier}
-    )
-    avail.num_connections = max(0, len(segments) - 1)
 
-    # Calculate layovers
+    # If we got carriers from segments but not from top-level, set them
+    if not avail.operating_carriers:
+        avail.operating_carriers = list(
+            {s.operating_carrier for s in segments if s.operating_carrier}
+        )
+
+    # If connections weren't set from top-level, infer from segments
+    if avail.num_connections == 0 and len(segments) > 1:
+        avail.num_connections = len(segments) - 1
+
+    # Calculate layovers from segments
     layovers: list[LayoverInfo] = []
-    total_layover = 0.0
     max_layover = 0.0
     for i in range(len(segments) - 1):
         prev_seg = segments[i]
@@ -292,7 +333,6 @@ def _parse_trip_detail(avail: AwardAvailability, trip: dict) -> None:
                 next_seg.departure - prev_seg.arrival
             ).total_seconds() / 3600
             layover_hours = round(layover_hours, 1)
-            total_layover += layover_hours
             max_layover = max(max_layover, layover_hours)
 
             layover = LayoverInfo(
@@ -305,8 +345,13 @@ def _parse_trip_detail(avail: AwardAvailability, trip: dict) -> None:
     avail.layovers = layovers
     avail.max_layover_hours = max_layover
 
-    # Total travel time
-    if segments and segments[0].departure and segments[-1].arrival:
+    # Total travel time from segments (if not already set from TotalDuration)
+    if (
+        avail.total_travel_hours == 0.0
+        and segments
+        and segments[0].departure
+        and segments[-1].arrival
+    ):
         total = (
             segments[-1].arrival - segments[0].departure
         ).total_seconds() / 3600

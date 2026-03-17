@@ -72,6 +72,36 @@ pip install .
 python -m src.main
 ```
 
+## seats.aero API Field Reference
+
+The seats.aero Partner API uses specific field names. These were discovered via diagnostic logging:
+
+**Cached Search (`/search`) — raw availability:**
+- Keys: `AvailabilityTrips, CreatedAt, Date, FAirlines, ID, JAirlines, JAirlinesRaw, JAvailable, JMileageCost, JRemainingSeats, Route, RouteID, Source, ...`
+- Per-cabin prefixed fields: `J` = business, `F` = first, `W` = premium, `Y` = economy (e.g. `JMileageCost`, `JAirlines`, `JRemainingSeats`)
+- `Route` is a nested object with: `OriginAirport, DestinationAirport, OriginRegion, DestinationRegion, Distance, Source`
+- `JAirlines` = comma-separated carrier codes (e.g. `"QR"`, `"AC, LH"`)
+
+**Trips (`/trips/{id}`) — trip detail:**
+- Keys: `Aircraft, ArrivesAt, AvailabilityID, AvailabilitySegments, Cabin, Carriers, Connections, CreatedAt, DepartsAt, DestinationAirport, FlightNumbers, ID, MileageCost, OriginAirport, RemainingSeats, RouteID, Source, Stops, TotalDuration, TotalSegmentDistance, TotalTaxes, UpdatedAt`
+- Returns `{"data": [...]}` — a **list** of trip options (take `data[0]`)
+- `Carriers` = comma-separated string of operating carriers
+- `AvailabilitySegments` (**NOT** "Segments") = list of segment dicts
+- `TotalDuration` = total travel time in **minutes**
+- `Connections` = number of connections (int)
+
+**Segment objects** (inside `AvailabilitySegments`):
+- Expected keys: `OriginAirport, DestinationAirport, Carrier, FlightNumber, DepartsAt, ArrivesAt, Aircraft`
+- Time format: ISO 8601 with timezone (e.g. `2026-06-10T10:00:00+00:00`)
+
+## Transfer Partners
+
+- `src/data/transfer_partners.yaml` — maps Chase UR (11 partners), Capital One (21 partners), United MileagePlus
+- Sourced from official Chase/Capital One pages (URLs in YAML comments)
+- Key: Capital One can transfer to **Qatar** (1:1), Emirates is **4:3** (rate: 0.75), EVA/JAL are also 4:3
+- Chase does NOT transfer to Emirates or Qatar directly
+- `seats_aero_source` links each partner to what seats.aero calls that program (e.g. `"avios"`, `"flyingblue"`, `"qatar"`)
+
 ## Current Phase: Phase 1 (Foundation)
 
 Implemented:
@@ -86,12 +116,24 @@ Implemented:
 - [x] Deal history tracking (first_seen dates, freshness badges: NEW / Day N)
 - [x] Direction labels (Outbound / Return) in email
 - [x] Manual trigger safety (workflow_dispatch skips state writes)
+- [x] Trip detail parsing with correct seats.aero field names (AvailabilitySegments, Carriers, TotalDuration)
+- [x] Transfer partners updated to match actual Chase UR + Capital One partner lists (including Qatar)
+- [x] JAirlines fallback for airline carrier extraction when trip detail unavailable
+- [x] Email shows only deal score (0-100), removed confusing airline rating (x/10)
 
 Not yet implemented:
 - [ ] Transfer bonus scrapers (FrequentMiler, TPG, AwardWallet) — Phase 2
 - [ ] Cash price / CPP calculation — Phase 3
 - [ ] Opportunistic scanning — Phase 4
 - [ ] Slack/push notifications — Phase 4
+
+## Still To Do (next session)
+
+- [ ] Clean up one-shot diagnostic logging (`_LOGGED_RAW_KEYS`, `_LOGGED_TRIP_KEYS` flags in `seats_aero.py`) — useful during development but should be removed or put behind a DEBUG flag eventually
+- [ ] Verify segment field names from a real API response (we haven't seen actual `AvailabilitySegments` contents yet — the field names like `Carrier`, `DepartsAt`, `OriginAirport` are based on the top-level trip pattern, need confirmation from a live run)
+- [ ] After confirming the live run works: check the email output for correct airline names, routing info, and scoring display
+- [ ] Consider adding more airline products to `src/data/airline_products.yaml` if new carriers show up as "Unknown"
+- [ ] The scoring engine weights may need tuning based on real-world deal quality
 
 ## Git Commits
 
