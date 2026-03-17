@@ -32,6 +32,7 @@ Matches the Morning Brief email styling from email-reports:
 - `config.example.yaml` — template with comments explaining format
 - `.env` — secrets (SEATS_AERO_API_KEY, RESEND_API_KEY) — gitignored
 - GitHub Actions secrets: SEATS_AERO_API_KEY, RESEND_API_KEY
+- GitHub Actions vars: `EMAIL_FROM_ADDRESS`, `EMAIL_FROM_NAME`, `MANUAL_RUN_RECIPIENTS`, `EMAIL_RECIPIENTS_OVERRIDE`, `SEATS_AERO_REQUEST_DELAY_SECONDS`, `SEATS_AERO_MAX_REQUESTS_PER_RUN`, `SEATS_AERO_MAX_TRIP_DETAILS_PER_SEARCH`
 
 ## Trip Config Format
 
@@ -95,7 +96,7 @@ The seats.aero Partner API uses specific field names. These were discovered via 
 - **No `Carrier` key** in segments — carrier info is only at the trip-level `Carriers` field
 - Time format: ISO 8601 with timezone (e.g. `2026-06-10T10:00:00+00:00`)
 
-**Rate limiting**: seats.aero Pro allows ~2 req/sec. Client has 0.6s delay between requests + 429 retry with backoff (2s, 4s). Without this, runs hit 429 after ~20 rapid requests.
+**Rate limiting**: the client now defaults to 1.0s spacing, respects `Retry-After` on 429s, caps trip-detail lookups per route search, and logs a structured `SEATS_AERO_USAGE` summary each run.
 
 ## Transfer Partners
 
@@ -141,9 +142,10 @@ Not yet implemented:
 - [ ] Clean up one-shot diagnostic logging (`_LOGGED_RAW_KEYS`, `_LOGGED_TRIP_KEYS` flags in `seats_aero.py`) — useful during development but should be removed or put behind a DEBUG flag eventually
 - [ ] Segment-level `Carrier` is NOT in the API response — carrier info only exists at trip-level `Carriers` field. Consider parsing `FlightNumber` (e.g. "QR740") to extract per-segment carrier codes
 - [ ] After rate-limited run completes successfully: check the email output for correct airline names, routing info, and scoring display
+- [ ] Re-authenticate `gh` locally (or provide a fresh token) so private GitHub Actions logs can be inspected for the historical rate-limit failures
 - [ ] Consider adding more airline products to `src/data/airline_products.yaml` if new carriers show up as "Unknown"
 - [ ] The scoring engine weights may need tuning based on real-world deal quality
-- [ ] Run is slow now (~100 API calls × 0.6s = ~60s minimum) — could optimize by skipping trips calls for sources we know aren't transferable
+- [ ] Run is slower now by design because the default spacing is 1.0s and trip-detail lookups are capped; tune the env vars if the logs show plenty of quota headroom
 
 ## Git Commits
 

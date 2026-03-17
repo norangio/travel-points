@@ -91,6 +91,7 @@ def save_state(
     current_deal_keys: list[str],
     history: dict[str, str],
     api_calls_used: int = 0,
+    api_summary: dict | None = None,
 ) -> None:
     """
     Save updated deal history. Merges today's deals into existing history.
@@ -122,6 +123,8 @@ def save_state(
         "deals_today": len(current_deal_keys),
         "new_deals_today": new_count,
     }
+    if api_summary is not None:
+        state["api_summary"] = api_summary
 
     try:
         with open(STATE_FILE, "w") as f:

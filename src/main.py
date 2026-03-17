@@ -3,8 +3,11 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
+import os
 import sys
+from dataclasses import dataclass
 from datetime import date, timedelta
 
 from src.config import (
@@ -15,13 +18,19 @@ from src.config import (
 from src.email.builder import build_digest_email
 from src.email.sender import EmailSender
 from src.layover.analyzer import analyze_all_layovers
-from src.models import ScoredDeal
+from src.models import AwardAvailability, ScoredDeal, TransferPath
 from src.scoring.airline_quality import get_tier_for_carriers
 from src.scoring.engine import score_deal
 from src.scoring.transfer_paths import calculate_transfer_paths
 from src.sources.seats_aero import SeatsAeroClient, parse_availability
 from src.sources.transfer_bonuses import load_bonuses_from_config
-from src.state import days_seen, get_first_seen, load_deal_history, save_state
+from src.state import (
+    days_seen,
+    get_first_seen,
+    is_manual_trigger,
+    load_deal_history,
+    save_state,
+)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -29,6 +38,15 @@ logging.basicConfig(
     stream=sys.stdout,
 )
 logger = logging.getLogger(__name__)
+
+
+@dataclass
+class RouteCandidate:
+    """A raw search hit worth spending a trip-detail lookup on."""
+
+    raw: dict
+    availability: AwardAvailability
+    transfer_paths: list[TransferPath]
 
 
 def _make_deal_key(avail) -> str:
@@ -55,6 +73,7 @@ async def run_digest() -> None:
     routing_config = config.get("routing", {})
     email_config = config.get("email", {})
     max_deals = email_config.get("max_deals_per_email", 15)
+    planned_search_calls = _count_planned_search_calls(trips, origins)
 
     if not settings.seats_aero_api_key:
         logger.error("SEATS_AERO_API_KEY not set — cannot fetch availability")
@@ -68,9 +87,25 @@ async def run_digest() -> None:
     history = load_deal_history()
 
     # Step 4: Query seats.aero for each trip (outbound + return)
-    client = SeatsAeroClient(settings.seats_aero_api_key)
+    max_requests_per_run = settings.seats_aero_max_requests_per_run
+    max_trip_details_per_search = settings.seats_aero_max_trip_details_per_search
+    logger.info(
+        "seats.aero plan: %s search requests scheduled, cap %s HTTP requests/run, "
+        "max %s trip lookups per search, %.1fs minimum spacing",
+        planned_search_calls,
+        max_requests_per_run,
+        max_trip_details_per_search,
+        settings.seats_aero_request_delay_seconds,
+    )
+
+    client = SeatsAeroClient(
+        settings.seats_aero_api_key,
+        request_delay_seconds=settings.seats_aero_request_delay_seconds,
+        max_retries=settings.seats_aero_max_retries,
+    )
     all_deals: list[ScoredDeal] = []
-    api_calls = 0
+    logical_api_calls = 0
+    budget_exhausted = False
 
     search_stats: list[dict] = []  # per-route search summary
 
@@ -98,6 +133,15 @@ async def run_digest() -> None:
 
                 for from_apt in leg["from_airports"]:
                     for to_apt in leg["to_airports"]:
+                        if _request_budget_exhausted(client, max_requests_per_run):
+                            budget_exhausted = True
+                            logger.warning(
+                                "Stopping scan after %s HTTP requests to stay within the run cap of %s",
+                                client.stats.total_http_requests,
+                                max_requests_per_run,
+                            )
+                            break
+
                         results = await client.cached_search(
                             origin=from_apt,
                             destination=to_apt,
@@ -105,12 +149,32 @@ async def run_digest() -> None:
                             start_date=leg["earliest"],
                             end_date=leg["latest"],
                         )
-                        api_calls += 1
+                        logical_api_calls += 1
+
+                        candidates, route_filters = _build_route_candidates(
+                            raw_results=results,
+                            balances=balances,
+                            transfer_partners=transfer_partners,
+                            bonuses=bonuses,
+                            travelers=travelers,
+                        )
+                        trip_candidates = candidates[:max_trip_details_per_search]
+                        skipped_by_cap = max(0, len(candidates) - len(trip_candidates))
 
                         route_deals = 0
-                        for raw in results:
+                        trip_details_fetched = 0
+                        for candidate in trip_candidates:
+                            if _request_budget_exhausted(client, max_requests_per_run):
+                                budget_exhausted = True
+                                logger.warning(
+                                    "Stopping trip lookups after %s HTTP requests to stay within the run cap of %s",
+                                    client.stats.total_http_requests,
+                                    max_requests_per_run,
+                                )
+                                break
+
                             deal = await _process_result(
-                                raw=raw,
+                                raw=candidate.raw,
                                 client=client,
                                 config=config,
                                 routing_config=routing_config,
@@ -121,30 +185,72 @@ async def run_digest() -> None:
                                 history=history,
                                 trip_name=trip_name,
                                 direction=leg["direction"],
+                                availability=candidate.availability,
+                                precomputed_paths=candidate.transfer_paths,
                             )
+                            logical_api_calls += 1
+                            trip_details_fetched += 1
                             if deal:
                                 all_deals.append(deal)
                                 route_deals += 1
-                                api_calls += 1  # get_trip call
+
+                        if skipped_by_cap:
+                            logger.info(
+                                "Route %s → %s (%s) had %s trip-detail candidates; limited to %s for quota control",
+                                from_apt,
+                                to_apt,
+                                leg["direction"],
+                                len(candidates),
+                                max_trip_details_per_search,
+                            )
 
                         search_stats.append({
                             "route": f"{from_apt} → {to_apt}",
                             "direction": leg["direction"].capitalize(),
                             "trip_name": trip_name,
                             "raw_results": len(results),
+                            "candidate_results": len(candidates),
+                            "trip_details_fetched": trip_details_fetched,
                             "qualifying_deals": route_deals,
+                            "filtered_zero_cost": route_filters["zero_cost"],
+                            "filtered_insufficient_seats": route_filters["insufficient_seats"],
+                            "filtered_no_paths": route_filters["no_paths"],
+                            "skipped_by_lookup_cap": skipped_by_cap,
                         })
+
+                        if budget_exhausted:
+                            break
+
+                    if budget_exhausted:
+                        break
+
+                if budget_exhausted:
+                    break
+
+            if budget_exhausted:
+                break
 
     finally:
         await client.close()
 
+    api_summary = client.stats.to_dict()
+    api_summary.update({
+        "budget_exhausted": int(budget_exhausted),
+        "max_requests_per_run": max_requests_per_run,
+        "max_trip_details_per_search": max_trip_details_per_search,
+        "planned_search_calls": planned_search_calls,
+    })
     logger.info(
-        f"Found {len(all_deals)} deals from {api_calls} API calls"
+        "Found %s deals from %s logical API calls (%s HTTP requests)",
+        len(all_deals),
+        logical_api_calls,
+        client.stats.total_http_requests,
     )
     total_raw = sum(s["raw_results"] for s in search_stats)
     logger.info(
         f"Searched {len(search_stats)} routes, {total_raw} total raw results"
     )
+    logger.info("SEATS_AERO_USAGE %s", json.dumps(api_summary, sort_keys=True))
 
     # Step 5: Rank deals — prioritize by trip urgency (nearest departure),
     # then by score within each trip
@@ -168,7 +274,7 @@ async def run_digest() -> None:
         search_stats=search_stats,
     )
 
-    recipients = email_config.get("recipients", [])
+    recipients = _resolve_recipients(email_config, settings)
     if not recipients:
         logger.warning("No email recipients configured")
     else:
@@ -188,7 +294,8 @@ async def run_digest() -> None:
     save_state(
         current_deal_keys=all_deal_keys,
         history=history,
-        api_calls_used=api_calls,
+        api_calls_used=client.stats.total_http_requests,
+        api_summary=api_summary,
     )
 
     logger.info("=== Points Deal Finder — Digest complete ===")
@@ -282,9 +389,11 @@ async def _process_result(
     history: dict[str, str],
     trip_name: str,
     direction: str,
+    availability: AwardAvailability | None = None,
+    precomputed_paths: list[TransferPath] | None = None,
 ) -> ScoredDeal | None:
     """Process a single seats.aero result into a ScoredDeal (or None if filtered)."""
-    avail = parse_availability(raw)
+    avail = availability or parse_availability(raw)
 
     _tag = f"[{avail.source}] {avail.origin}→{avail.destination} {avail.departure_date}"
 
@@ -292,10 +401,28 @@ async def _process_result(
         logger.info(f"FILTERED zero_cost: {_tag}")
         return None
 
+    if avail.seats_available and avail.seats_available < travelers:
+        logger.info(
+            "FILTERED seats: %s — %s seat(s) < %s travelers",
+            _tag,
+            avail.seats_available,
+            travelers,
+        )
+        return None
+
     # Get trip detail for routing info
     trip_detail = await client.get_trip(avail.id)
     if trip_detail:
         avail = parse_availability(raw, trip_detail)
+
+    if avail.seats_available and avail.seats_available < travelers:
+        logger.info(
+            "FILTERED seats: %s — %s seat(s) < %s travelers after trip detail",
+            _tag,
+            avail.seats_available,
+            travelers,
+        )
+        return None
 
     # Apply routing filters
     max_conn = routing_config.get("max_connections", 1)
@@ -319,7 +446,7 @@ async def _process_result(
         return None
 
     # Calculate transfer paths
-    paths = calculate_transfer_paths(
+    paths = precomputed_paths or calculate_transfer_paths(
         award_cost=avail.points_cost,
         booking_program=avail.source,
         balances=balances,
@@ -407,6 +534,139 @@ def _trip_urgency_order(trips: list[dict]) -> dict[str, int]:
     # Sort by date (None → end)
     trip_dates.sort(key=lambda t: t[0] or date.max)
     return {name: i for i, (_, name) in enumerate(trip_dates)}
+
+
+def _count_planned_search_calls(trips: list[dict], origins: list[str]) -> int:
+    """Count cached-search calls implied by the current config."""
+    total = 0
+    for trip in trips:
+        dest_airports = []
+        for dest_group in trip.get("destinations", []):
+            dest_airports.extend(dest_group.get("preferred_airports", []))
+        legs = _build_search_legs(
+            trip,
+            origins,
+            dest_airports,
+            trip.get("flexibility_days", 0),
+        )
+        for leg in legs:
+            total += len(leg["from_airports"]) * len(leg["to_airports"])
+    return total
+
+
+def _build_route_candidates(
+    raw_results: list[dict],
+    balances: dict,
+    transfer_partners: dict,
+    bonuses: list,
+    travelers: int,
+) -> tuple[list[RouteCandidate], dict[str, int]]:
+    """Filter and prioritize raw search hits before trip-detail lookups."""
+    counts = {
+        "zero_cost": 0,
+        "insufficient_seats": 0,
+        "no_paths": 0,
+    }
+    candidates: list[RouteCandidate] = []
+
+    for raw in raw_results:
+        avail = parse_availability(raw)
+        if avail.points_cost == 0:
+            counts["zero_cost"] += 1
+            continue
+        if avail.seats_available and avail.seats_available < travelers:
+            counts["insufficient_seats"] += 1
+            continue
+
+        paths = calculate_transfer_paths(
+            award_cost=avail.points_cost,
+            booking_program=avail.source,
+            balances=balances,
+            transfer_partners=transfer_partners,
+            active_bonuses=bonuses,
+            travelers=travelers,
+        )
+        if not paths:
+            counts["no_paths"] += 1
+            continue
+
+        candidates.append(
+            RouteCandidate(
+                raw=raw,
+                availability=avail,
+                transfer_paths=paths,
+            )
+        )
+
+    candidates.sort(key=lambda candidate: _route_candidate_sort_key(candidate, travelers))
+    return candidates, counts
+
+
+def _route_candidate_sort_key(
+    candidate: RouteCandidate,
+    travelers: int,
+) -> tuple:
+    """Prioritize bookable, cheaper results first within each route search."""
+    best_path = candidate.transfer_paths[0]
+    enough_seats = (
+        candidate.availability.seats_available == 0
+        or candidate.availability.seats_available >= travelers
+    )
+    return (
+        not enough_seats,
+        not best_path.affordable_both,
+        best_path.points_needed_per_person,
+        candidate.availability.departure_date,
+        candidate.availability.source,
+    )
+
+
+def _request_budget_exhausted(
+    client: SeatsAeroClient,
+    max_requests_per_run: int,
+) -> bool:
+    """Whether the hard seats.aero HTTP request budget has been reached."""
+    return client.stats.total_http_requests >= max_requests_per_run
+
+
+def _resolve_recipients(email_config: dict, settings) -> list[str]:
+    """Determine recipients for this run, with safe defaults for testing."""
+    configured = list(email_config.get("recipients", []))
+
+    override = _parse_recipient_env(
+        settings.email_recipients_override or os.environ.get("EMAIL_RECIPIENTS_OVERRIDE", "")
+    )
+    if override:
+        logger.info(
+            "Using EMAIL_RECIPIENTS_OVERRIDE for this run: %s recipient(s)",
+            len(override),
+        )
+        return override
+
+    if is_manual_trigger():
+        manual_override = _parse_recipient_env(
+            settings.manual_run_recipients or os.environ.get("MANUAL_RUN_RECIPIENTS", "")
+        )
+        if manual_override:
+            logger.info(
+                "Manual run detected; using MANUAL_RUN_RECIPIENTS: %s recipient(s)",
+                len(manual_override),
+            )
+            return manual_override
+
+        if configured:
+            logger.info(
+                "Manual run detected; defaulting to first configured recipient only: %s",
+                configured[0],
+            )
+            return [configured[0]]
+
+    return configured
+
+
+def _parse_recipient_env(value: str) -> list[str]:
+    """Parse a comma-separated env var into recipient addresses."""
+    return [part.strip() for part in value.split(",") if part.strip()]
 
 
 def main() -> None:

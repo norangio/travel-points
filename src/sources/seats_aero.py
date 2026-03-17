@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import asyncio
 import logging
+from dataclasses import asdict, dataclass
 from datetime import date, datetime
+from email.utils import parsedate_to_datetime
 
 import httpx
 
@@ -19,42 +21,84 @@ logger = logging.getLogger(__name__)
 BASE_URL = "https://seats.aero/partnerapi"
 
 
+@dataclass
+class RequestStats:
+    """HTTP usage and rate-limit counters for a single run."""
+
+    total_http_requests: int = 0
+    search_calls: int = 0
+    trip_calls: int = 0
+    availability_calls: int = 0
+    rate_limit_responses: int = 0
+    retries: int = 0
+    search_failures: int = 0
+    trip_failures: int = 0
+    availability_failures: int = 0
+
+    def to_dict(self) -> dict[str, int]:
+        data = asdict(self)
+        data["logical_calls"] = (
+            self.search_calls + self.trip_calls + self.availability_calls
+        )
+        return data
+
+
 class SeatsAeroClient:
     """Client for the seats.aero Partner API with rate limiting."""
 
-    # seats.aero Pro allows ~2 requests/second
-    REQUEST_DELAY = 0.6  # seconds between requests
-    MAX_RETRIES = 2
-
-    def __init__(self, api_key: str) -> None:
+    def __init__(
+        self,
+        api_key: str,
+        request_delay_seconds: float = 1.0,
+        max_retries: int = 4,
+    ) -> None:
         self.api_key = api_key
+        self.request_delay_seconds = max(0.0, request_delay_seconds)
+        self.max_retries = max(0, max_retries)
         self.client = httpx.AsyncClient(
             base_url=BASE_URL,
             headers={"Partner-Authorization": api_key},
             timeout=30.0,
         )
         self._last_request_time = 0.0
+        self.stats = RequestStats()
 
     async def close(self) -> None:
         await self.client.aclose()
 
-    async def _throttled_get(self, url: str, **kwargs) -> httpx.Response:
+    async def _throttled_get(
+        self,
+        url: str,
+        request_type: str = "request",
+        **kwargs,
+    ) -> httpx.Response:
         """Make a GET request with rate limiting and 429 retry."""
         import time
 
-        for attempt in range(self.MAX_RETRIES + 1):
+        for attempt in range(self.max_retries + 1):
             # Enforce minimum delay between requests
             now = time.monotonic()
             elapsed = now - self._last_request_time
-            if elapsed < self.REQUEST_DELAY:
-                await asyncio.sleep(self.REQUEST_DELAY - elapsed)
+            if elapsed < self.request_delay_seconds:
+                await asyncio.sleep(self.request_delay_seconds - elapsed)
 
             self._last_request_time = time.monotonic()
+            self.stats.total_http_requests += 1
             resp = await self.client.get(url, **kwargs)
 
-            if resp.status_code == 429 and attempt < self.MAX_RETRIES:
-                wait = 2.0 * (attempt + 1)  # 2s, 4s backoff
-                logger.warning(f"seats.aero 429 rate limit, waiting {wait}s (attempt {attempt + 1})")
+            if resp.status_code == 429:
+                self.stats.rate_limit_responses += 1
+
+            if resp.status_code == 429 and attempt < self.max_retries:
+                self.stats.retries += 1
+                wait = _retry_after_seconds(resp) or (2.0 ** (attempt + 1))
+                logger.warning(
+                    "seats.aero 429 on %s, waiting %.1fs (attempt %s/%s)",
+                    request_type,
+                    wait,
+                    attempt + 1,
+                    self.max_retries,
+                )
                 await asyncio.sleep(wait)
                 continue
 
@@ -76,6 +120,7 @@ class SeatsAeroClient:
 
         Returns raw availability results from seats.aero.
         """
+        self.stats.search_calls += 1
         params: dict = {
             "origin_airport": origin,
             "destination_airport": destination,
@@ -89,7 +134,11 @@ class SeatsAeroClient:
             params["source"] = source
 
         try:
-            resp = await self._throttled_get("/search", params=params)
+            resp = await self._throttled_get(
+                "/search",
+                request_type="search",
+                params=params,
+            )
             resp.raise_for_status()
             data = resp.json()
             results = data.get("data", [])
@@ -98,9 +147,11 @@ class SeatsAeroClient:
             )
             return results
         except httpx.HTTPStatusError as e:
+            self.stats.search_failures += 1
             logger.error(f"seats.aero search error {e.response.status_code}: {e}")
             return []
         except Exception as e:
+            self.stats.search_failures += 1
             logger.error(f"seats.aero search failed: {e}")
             return []
 
@@ -112,8 +163,12 @@ class SeatsAeroClient:
         The trips endpoint returns {"data": [...]}, a list of trip options.
         We take the first one (shortest/best routing).
         """
+        self.stats.trip_calls += 1
         try:
-            resp = await self._throttled_get(f"/trips/{availability_id}")
+            resp = await self._throttled_get(
+                f"/trips/{availability_id}",
+                request_type="trip",
+            )
             resp.raise_for_status()
             data = resp.json().get("data")
             if isinstance(data, list):
@@ -124,9 +179,11 @@ class SeatsAeroClient:
             # If it's already a dict, return as-is
             return data
         except httpx.HTTPStatusError as e:
+            self.stats.trip_failures += 1
             logger.error(f"seats.aero trip {availability_id} error: {e}")
             return None
         except Exception as e:
+            self.stats.trip_failures += 1
             logger.error(f"seats.aero trip {availability_id} failed: {e}")
             return None
 
@@ -135,14 +192,17 @@ class SeatsAeroClient:
         Bulk availability for an entire mileage program.
         Use sparingly — burns API quota.
         """
+        self.stats.availability_calls += 1
         try:
             resp = await self._throttled_get(
                 "/availability",
+                request_type="availability",
                 params={"source": source},
             )
             resp.raise_for_status()
             return resp.json().get("data", [])
         except Exception as e:
+            self.stats.availability_failures += 1
             logger.error(f"seats.aero bulk availability ({source}) failed: {e}")
             return []
 
@@ -267,6 +327,9 @@ def _parse_trip_detail(avail: AwardAvailability, trip: dict) -> None:
     total_duration_min = _parse_int(trip.get("TotalDuration", 0))
     if total_duration_min > 0:
         avail.total_travel_hours = round(total_duration_min / 60, 1)
+
+    if "RemainingSeats" in trip:
+        avail.seats_available = _parse_int(trip.get("RemainingSeats"))
 
     # --- Parse segments: seats.aero uses "AvailabilitySegments" ---
     segments_data = (
@@ -431,3 +494,18 @@ def _parse_float(val) -> float:
         return float(val)
     except (TypeError, ValueError):
         return 0.0
+
+
+def _retry_after_seconds(resp: httpx.Response) -> float | None:
+    value = resp.headers.get("Retry-After")
+    if not value:
+        return None
+
+    try:
+        return max(0.0, float(value))
+    except ValueError:
+        try:
+            retry_dt = parsedate_to_datetime(value)
+        except (TypeError, ValueError):
+            return None
+        return max(0.0, (retry_dt - datetime.now(retry_dt.tzinfo)).total_seconds())

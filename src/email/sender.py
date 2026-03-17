@@ -16,9 +16,12 @@ class EmailSender:
 
     def __init__(self) -> None:
         settings = get_settings()
-        resend.api_key = settings.resend_api_key
+        self.api_key = settings.resend_api_key
+        resend.api_key = self.api_key
         self.from_email = settings.email_from_address
         self.from_name = settings.email_from_name
+        if not self.api_key:
+            logger.warning("RESEND_API_KEY is not set — email sending will fail")
 
     def send(
         self,
@@ -28,6 +31,10 @@ class EmailSender:
         text_body: str,
     ) -> str | None:
         """Send an email. Returns email ID on success, None on failure."""
+        if not self.api_key:
+            logger.error("Cannot send email to %s without RESEND_API_KEY", to_email)
+            return None
+
         try:
             response = resend.Emails.send(
                 {
@@ -53,9 +60,20 @@ class EmailSender:
         text_body: str,
     ) -> list[str]:
         """Send to multiple recipients. Returns list of successful email IDs."""
+        if recipients and self.from_email.strip().lower() == "onboarding@resend.dev":
+            logger.warning(
+                "Using Resend test sender onboarding@resend.dev. Resend only delivers "
+                "this sender to the account owner; set EMAIL_FROM_ADDRESS to a verified "
+                "sender before expecting all recipients to receive the digest."
+            )
         ids = []
         for email in recipients:
             result = self.send(email, subject, html_body, text_body)
             if result:
                 ids.append(result)
+        logger.info(
+            "Email send summary: %s/%s recipients accepted by Resend",
+            len(ids),
+            len(recipients),
+        )
         return ids

@@ -19,6 +19,11 @@ Layers intelligence on top of [seats.aero](https://seats.aero) Pro to answer: **
 2. Set environment variables (or create `.env`):
    - `SEATS_AERO_API_KEY` — seats.aero Pro API key
    - `RESEND_API_KEY` — Resend email API key
+   - `EMAIL_FROM_ADDRESS` — verified Resend sender address (defaults to `onboarding@resend.dev`)
+   - `EMAIL_FROM_NAME` — sender display name
+   - `SEATS_AERO_REQUEST_DELAY_SECONDS` — minimum spacing between API calls (default `1.0`)
+   - `SEATS_AERO_MAX_REQUESTS_PER_RUN` — hard cap for seats.aero HTTP requests per digest (default `900`)
+   - `SEATS_AERO_MAX_TRIP_DETAILS_PER_SEARCH` — max `/trips/{id}` lookups per route search (default `6`)
 3. Install: `pip install .`
 4. Run manually: `python -m src.main`
 
@@ -27,6 +32,17 @@ Layers intelligence on top of [seats.aero](https://seats.aero) Pro to answer: **
 The digest runs daily at 7 PM PST via GitHub Actions cron. Required secrets:
 - `SEATS_AERO_API_KEY`
 - `RESEND_API_KEY`
+
+Recommended GitHub Actions variables:
+- `EMAIL_FROM_ADDRESS` — use a verified sender if you want delivery beyond the Resend account owner
+- `EMAIL_FROM_NAME`
+- `MANUAL_RUN_RECIPIENTS` — optional comma-separated list for `workflow_dispatch` runs; if unset, manual runs default to the first recipient in `config.yaml`
+- `EMAIL_RECIPIENTS_OVERRIDE` — optional comma-separated override for any run
+- `SEATS_AERO_REQUEST_DELAY_SECONDS`
+- `SEATS_AERO_MAX_REQUESTS_PER_RUN`
+- `SEATS_AERO_MAX_TRIP_DETAILS_PER_SEARCH`
+
+If `EMAIL_FROM_ADDRESS` is left unset, the workflow falls back to `onboarding@resend.dev`, which Resend treats as a test sender and typically only delivers to the account owner.
 
 ## Project Structure
 

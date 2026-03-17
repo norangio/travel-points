@@ -30,6 +30,12 @@ class Settings(BaseSettings):
     resend_api_key: str = Field(default="")
     email_from_address: str = Field(default="onboarding@resend.dev")
     email_from_name: str = Field(default="Points Deal Finder")
+    email_recipients_override: str = Field(default="")
+    manual_run_recipients: str = Field(default="")
+    seats_aero_request_delay_seconds: float = Field(default=1.0)
+    seats_aero_max_retries: int = Field(default=4)
+    seats_aero_max_requests_per_run: int = Field(default=900)
+    seats_aero_max_trip_details_per_search: int = Field(default=6)
     github_token: str = Field(default="")
     gist_id: str = Field(default="")
 
