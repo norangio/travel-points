@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from datetime import date, datetime
 
@@ -19,7 +20,11 @@ BASE_URL = "https://seats.aero/partnerapi"
 
 
 class SeatsAeroClient:
-    """Client for the seats.aero Partner API."""
+    """Client for the seats.aero Partner API with rate limiting."""
+
+    # seats.aero Pro allows ~2 requests/second
+    REQUEST_DELAY = 0.6  # seconds between requests
+    MAX_RETRIES = 2
 
     def __init__(self, api_key: str) -> None:
         self.api_key = api_key
@@ -28,9 +33,34 @@ class SeatsAeroClient:
             headers={"Partner-Authorization": api_key},
             timeout=30.0,
         )
+        self._last_request_time = 0.0
 
     async def close(self) -> None:
         await self.client.aclose()
+
+    async def _throttled_get(self, url: str, **kwargs) -> httpx.Response:
+        """Make a GET request with rate limiting and 429 retry."""
+        import time
+
+        for attempt in range(self.MAX_RETRIES + 1):
+            # Enforce minimum delay between requests
+            now = time.monotonic()
+            elapsed = now - self._last_request_time
+            if elapsed < self.REQUEST_DELAY:
+                await asyncio.sleep(self.REQUEST_DELAY - elapsed)
+
+            self._last_request_time = time.monotonic()
+            resp = await self.client.get(url, **kwargs)
+
+            if resp.status_code == 429 and attempt < self.MAX_RETRIES:
+                wait = 2.0 * (attempt + 1)  # 2s, 4s backoff
+                logger.warning(f"seats.aero 429 rate limit, waiting {wait}s (attempt {attempt + 1})")
+                await asyncio.sleep(wait)
+                continue
+
+            return resp
+
+        return resp  # return last response even if still 429
 
     async def cached_search(
         self,
@@ -59,7 +89,7 @@ class SeatsAeroClient:
             params["source"] = source
 
         try:
-            resp = await self.client.get("/search", params=params)
+            resp = await self._throttled_get("/search", params=params)
             resp.raise_for_status()
             data = resp.json()
             results = data.get("data", [])
@@ -83,7 +113,7 @@ class SeatsAeroClient:
         We take the first one (shortest/best routing).
         """
         try:
-            resp = await self.client.get(f"/trips/{availability_id}")
+            resp = await self._throttled_get(f"/trips/{availability_id}")
             resp.raise_for_status()
             data = resp.json().get("data")
             if isinstance(data, list):
@@ -106,7 +136,7 @@ class SeatsAeroClient:
         Use sparingly — burns API quota.
         """
         try:
-            resp = await self.client.get(
+            resp = await self._throttled_get(
                 "/availability",
                 params={"source": source},
             )
