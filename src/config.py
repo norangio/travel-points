@@ -36,6 +36,8 @@ class Settings(BaseSettings):
     seats_aero_max_retries: int = Field(default=4)
     seats_aero_max_requests_per_run: int = Field(default=900)
     seats_aero_max_trip_details_per_search: int = Field(default=6)
+    transfer_bonus_scrapers_enabled: bool = Field(default=True)
+    transfer_bonus_scraper_timeout_seconds: float = Field(default=15.0)
     github_token: str = Field(default="")
     gist_id: str = Field(default="")
 

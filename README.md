@@ -8,7 +8,7 @@ Layers intelligence on top of [seats.aero](https://seats.aero) Pro to answer: **
 
 - Queries seats.aero for business class award availability across your defined trips
 - Calculates the cheapest transfer path from your actual point balances (Chase UR, Capital One, United)
-- Factors in active transfer bonuses (e.g., Chase → Avios 20% = 50k UR books a 60k Avios fare)
+- Factors in active transfer bonuses from current-bonus pages plus any manual overrides in `config.yaml`
 - Scores deals on cost, airline quality, routing, bonus urgency, and CPP value
 - Analyzes long layovers with hotel costs and transit options
 - Sends a styled HTML email digest every evening via Resend
@@ -24,6 +24,8 @@ Layers intelligence on top of [seats.aero](https://seats.aero) Pro to answer: **
    - `SEATS_AERO_REQUEST_DELAY_SECONDS` — minimum spacing between API calls (default `1.0`)
    - `SEATS_AERO_MAX_REQUESTS_PER_RUN` — hard cap for seats.aero HTTP requests per digest (default `900`)
    - `SEATS_AERO_MAX_TRIP_DETAILS_PER_SEARCH` — max `/trips/{id}` lookups per route search (default `6`)
+   - `TRANSFER_BONUS_SCRAPERS_ENABLED` — fetch current bonuses from Frequent Miler / TPG / AwardWallet (default `true`)
+   - `TRANSFER_BONUS_SCRAPER_TIMEOUT_SECONDS` — timeout for bonus source fetches (default `15.0`)
 3. Install: `pip install .`
 4. Run manually: `python -m src.main`
 
@@ -42,8 +44,12 @@ Recommended GitHub Actions variables:
 - `SEATS_AERO_REQUEST_DELAY_SECONDS`
 - `SEATS_AERO_MAX_REQUESTS_PER_RUN`
 - `SEATS_AERO_MAX_TRIP_DETAILS_PER_SEARCH`
+- `TRANSFER_BONUS_SCRAPERS_ENABLED`
+- `TRANSFER_BONUS_SCRAPER_TIMEOUT_SECONDS`
 
 If `EMAIL_FROM_ADDRESS` is left unset, the workflow falls back to `onboarding@resend.dev`, which Resend treats as a test sender and typically only delivers to the account owner.
+
+Transfer bonus scraping uses the current-bonus pages from [Frequent Miler](https://frequentmiler.com/current-point-transfer-bonuses/), [The Points Guy](https://thepointsguy.com/loyalty-programs/current-transfer-bonuses/), and [AwardWallet](https://awardwallet.com/news/credit-card-transfer-bonuses/). The scraper is best-effort; if a page fails or changes structure, the digest still runs and falls back to your manual `transfer_bonuses` entries.
 
 ## Local Email Preview
 
@@ -65,7 +71,7 @@ src/
 ├── state.py                # Cross-run deduplication
 ├── sources/
 │   ├── seats_aero.py       # seats.aero API client
-│   └── transfer_bonuses.py # Bonus loader (YAML → scrapers in Phase 2)
+│   └── transfer_bonuses.py # Bonus loader + current-bonus scrapers
 ├── scoring/
 │   ├── engine.py           # Composite deal scoring
 │   ├── transfer_paths.py   # Effective points cost calculator
@@ -85,6 +91,6 @@ src/
 ## Build Phases
 
 - **Phase 1** (current): Foundation, seats.aero integration, basic scoring, manual bonuses, email
-- **Phase 2**: Transfer bonus scrapers (FrequentMiler, TPG, AwardWallet)
+- **Phase 2**: Transfer bonus scrapers and validation
 - **Phase 3**: Airline quality polish, CPP/cash price lookups, dedup refinement
 - **Phase 4**: Opportunistic scanning, Slack alerts, bonus pattern analysis

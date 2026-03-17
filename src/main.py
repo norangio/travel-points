@@ -23,7 +23,7 @@ from src.scoring.airline_quality import get_tier_for_carriers
 from src.scoring.engine import score_deal
 from src.scoring.transfer_paths import calculate_transfer_paths
 from src.sources.seats_aero import SeatsAeroClient, parse_availability
-from src.sources.transfer_bonuses import load_bonuses_from_config
+from src.sources.transfer_bonuses import load_transfer_bonuses
 from src.state import (
     days_seen,
     get_first_seen,
@@ -79,8 +79,13 @@ async def run_digest() -> None:
         logger.error("SEATS_AERO_API_KEY not set — cannot fetch availability")
         return
 
-    # Step 2: Load transfer bonuses (Phase 1: from config YAML)
-    bonuses = load_bonuses_from_config(config)
+    # Step 2: Load transfer bonuses from config + current-bonus pages
+    bonuses = load_transfer_bonuses(
+        config,
+        transfer_partners,
+        enable_scrapers=settings.transfer_bonus_scrapers_enabled,
+        timeout_seconds=settings.transfer_bonus_scraper_timeout_seconds,
+    )
     logger.info(f"Loaded {len(bonuses)} active transfer bonuses")
 
     # Step 3: Load deal history (for first_seen tracking, NOT suppression)

@@ -46,8 +46,9 @@ trips:
     flexibility_days: 5
     priority: high
 
-# Manual transfer bonuses (Phase 1 — Phase 2 adds scrapers)
-# Update these when you spot new bonuses
+# Manual transfer bonuses
+# These are merged with the built-in web scrapers. Keep this section for
+# one-off bonuses, corrections, or anything the scrapers miss.
 transfer_bonuses:
   # Example:
   # - source_program: chase_ur

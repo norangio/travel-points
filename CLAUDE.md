@@ -6,7 +6,7 @@
 - **Config**: `src/config.py` — YAML config (balances, trips, preferences) + pydantic-settings for env secrets
 - **Data models**: `src/models.py` — TransferBonus, TransferPath, AwardAvailability, ScoredDeal, LayoverAnalysis, etc.
 - **seats.aero client**: `src/sources/seats_aero.py` — async httpx client for Cached Search + Get Trips endpoints
-- **Transfer bonuses**: `src/sources/transfer_bonuses.py` — Phase 1: loaded from config.yaml; Phase 2: scraped from FrequentMiler/TPG
+- **Transfer bonuses**: `src/sources/transfer_bonuses.py` — loads manual bonuses plus best-effort scrapes from Frequent Miler, TPG, and AwardWallet
 - **Scoring**: `src/scoring/engine.py` (composite 0-100 score), `transfer_paths.py` (effective cost calc), `airline_quality.py` (product tier lookups)
 - **Layover analysis**: `src/layover/analyzer.py` — for layovers >4h, looks up hotel costs (3-star+ near airport & city center) and transit options from `src/data/layover_cities.yaml`
 - **Email**: `src/email/builder.py` (Jinja2 rendering), `sender.py` (Resend API), templates in `src/email/templates/`
@@ -32,7 +32,7 @@ Matches the Morning Brief email styling from email-reports:
 - `config.example.yaml` — template with comments explaining format
 - `.env` — secrets (SEATS_AERO_API_KEY, RESEND_API_KEY) — gitignored
 - GitHub Actions secrets: SEATS_AERO_API_KEY, RESEND_API_KEY
-- GitHub Actions vars: `EMAIL_FROM_ADDRESS`, `EMAIL_FROM_NAME`, `MANUAL_RUN_RECIPIENTS`, `EMAIL_RECIPIENTS_OVERRIDE`, `SEATS_AERO_REQUEST_DELAY_SECONDS`, `SEATS_AERO_MAX_REQUESTS_PER_RUN`, `SEATS_AERO_MAX_TRIP_DETAILS_PER_SEARCH`
+- GitHub Actions vars: `EMAIL_FROM_ADDRESS`, `EMAIL_FROM_NAME`, `MANUAL_RUN_RECIPIENTS`, `EMAIL_RECIPIENTS_OVERRIDE`, `SEATS_AERO_REQUEST_DELAY_SECONDS`, `SEATS_AERO_MAX_REQUESTS_PER_RUN`, `SEATS_AERO_MAX_TRIP_DETAILS_PER_SEARCH`, `TRANSFER_BONUS_SCRAPERS_ENABLED`, `TRANSFER_BONUS_SCRAPER_TIMEOUT_SECONDS`
 
 ## Trip Config Format
 
@@ -103,6 +103,7 @@ The seats.aero Partner API uses specific field names. These were discovered via 
 - Time format: ISO 8601 with timezone (e.g. `2026-06-10T10:00:00+00:00`)
 
 **Rate limiting**: the client now defaults to 1.0s spacing, respects `Retry-After` on 429s, caps trip-detail lookups per route search, and logs a structured `SEATS_AERO_USAGE` summary each run.
+**Transfer bonus scraping**: current-bonus pages are fetched at runtime from Frequent Miler, The Points Guy, and AwardWallet; manual `config.yaml` bonuses still merge in and cover edge cases.
 
 ## Transfer Partners
 
@@ -118,6 +119,10 @@ The seats.aero Partner API uses specific field names. These were discovered via 
 - Pro API requires `Partner-Authorization` header with API key
 - Daily quota: 1,000 API calls per calendar day, reset at midnight UTC
 - The client spaces requests, respects `Retry-After`, and retries 429s with backoff
+- Transfer bonus sources:
+  - https://frequentmiler.com/current-point-transfer-bonuses/
+  - https://thepointsguy.com/loyalty-programs/current-transfer-bonuses/
+  - https://awardwallet.com/news/credit-card-transfer-bonuses/
 
 ## Current Phase: Phase 1 (Foundation)
 
@@ -128,7 +133,7 @@ Implemented:
 - [x] Manual transfer bonus input (YAML-based)
 - [x] Layover analysis for long layovers (>4h) — hotel costs + transit
 - [x] Email template + Resend integration (matching Morning Brief style)
-- [x] GitHub Actions cron (7 PM PST)
+- [x] GitHub Actions cron (single UTC schedule)
 - [x] Round-trip search (outbound + return with separate date windows)
 - [x] Deal history tracking (first_seen dates, freshness badges: NEW / Day N)
 - [x] Direction labels (Outbound / Return) in email
@@ -138,9 +143,9 @@ Implemented:
 - [x] JAirlines fallback for airline carrier extraction when trip detail unavailable
 - [x] Email shows only deal score (0-100), removed confusing airline rating (x/10)
 - [x] Local email preview renderer for layout checks without running the workflow
+- [x] Transfer bonus scrapers (Frequent Miler, TPG, AwardWallet) — best-effort runtime fetch
 
 Not yet implemented:
-- [ ] Transfer bonus scrapers (FrequentMiler, TPG, AwardWallet) — Phase 2
 - [ ] Cash price / CPP calculation — Phase 3
 - [ ] Opportunistic scanning — Phase 4
 - [ ] Slack/push notifications — Phase 4
