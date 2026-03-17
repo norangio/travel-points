@@ -5,7 +5,7 @@ from pathlib import Path
 
 from src.email.builder import build_digest_email
 from src.email.preview import render_preview
-from src.models import AwardAvailability, ScoredDeal, TransferPath
+from src.models import AwardAvailability, ScoredDeal, TransferBonus, TransferPath
 
 
 class EmailBuilderTest(unittest.TestCase):
@@ -61,3 +61,26 @@ class EmailBuilderTest(unittest.TestCase):
             self.assertTrue(text_path.exists())
             self.assertIn("Quick Look", html_path.read_text(encoding="utf-8"))
             self.assertIn("Points Deal Finder", text_path.read_text(encoding="utf-8"))
+
+    def test_bonus_labels_expand_program_families(self) -> None:
+        content = build_digest_email(
+            deals=[],
+            bonuses=[
+                TransferBonus(
+                    source_program="chase_ur",
+                    target_program="avios",
+                    bonus_percentage=0.20,
+                    effective_rate=1.2,
+                )
+            ],
+            balances={"chase_ur": 190000},
+            config={"travelers": 2},
+        )
+
+        self.assertIn("Chase Ultimate Rewards", content.html_body)
+        self.assertIn("Avios (British Airways / Iberia / Aer Lingus)", content.html_body)
+        self.assertIn("Chase Ultimate Rewards", content.text_body)
+        self.assertIn(
+            "Avios (British Airways / Iberia / Aer Lingus)",
+            content.text_body,
+        )

@@ -68,7 +68,7 @@
             </tr>
             <tr>
                 <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 15px; color: #333333; padding-top: 4px;">
-                    {{ bonus.source_program | replace('_', ' ') | title }} → {{ bonus.target_program | replace('_', ' ') | title }}:
+                    {{ bonus.source_program | program_label }} → {{ bonus.target_program | program_label }}:
                     <strong>+{{ (bonus.bonus_percentage * 100) | int }}% bonus</strong>
                     {% if bonus.end_date %}
                     <span style="color: #666666;">(ends {{ bonus.end_date.strftime('%b %d') }}{% if bonus.days_remaining is not none %} — {{ bonus.days_remaining }} days{% endif %})</span>

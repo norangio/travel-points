@@ -21,8 +21,54 @@ jinja_env = Environment(
     autoescape=select_autoescape(["html", "xml"]),
 )
 
+SOURCE_PROGRAM_LABELS = {
+    "chase_ur": "Chase Ultimate Rewards",
+    "capital_one": "Capital One Miles",
+    "united_miles": "United MileagePlus",
+}
+
+TARGET_PROGRAM_LABELS = {
+    "avios": "Avios (British Airways / Iberia / Aer Lingus)",
+    "flying_blue": "Flying Blue (Air France / KLM)",
+    "aeroplan": "Aeroplan (Air Canada)",
+    "virgin_atlantic": "Virgin Atlantic Flying Club",
+    "turkish": "Turkish Miles&Smiles",
+    "avianca": "Avianca LifeMiles",
+    "cathay": "Cathay Pacific Asia Miles",
+    "qatar": "Qatar Airways Privilege Club",
+    "emirates": "Emirates Skywards",
+    "etihad": "Etihad Guest",
+    "finnair": "Finnair Plus",
+    "qantas": "Qantas Frequent Flyer",
+    "aeromexico": "Aeromexico Rewards",
+    "eva_air": "EVA Infinity MileageLands",
+    "jal": "Japan Airlines Mileage Bank",
+    "tap": "TAP Miles&Go",
+    "jetblue": "JetBlue TrueBlue",
+    "southwest": "Southwest Rapid Rewards",
+    "hyatt": "World of Hyatt",
+    "marriott": "Marriott Bonvoy",
+    "ihg": "IHG One Rewards",
+    "wyndham": "Wyndham Rewards",
+    "choice": "Choice Privileges",
+    "accor": "Accor Live Limitless",
+    "united": "United MileagePlus",
+    "singapore": "Singapore KrisFlyer",
+}
+
+
+def _program_label(program: str) -> str:
+    """Convert internal program keys into user-facing labels."""
+    if program in SOURCE_PROGRAM_LABELS:
+        return SOURCE_PROGRAM_LABELS[program]
+    if program in TARGET_PROGRAM_LABELS:
+        return TARGET_PROGRAM_LABELS[program]
+    return program.replace("_", " ").title()
+
+
 # Register custom filters
 jinja_env.filters["format_number"] = lambda n: f"{n:,}"
+jinja_env.filters["program_label"] = _program_label
 
 
 @dataclass
@@ -151,7 +197,7 @@ def _build_plain_text(
             if b.end_date:
                 expiry = f" (ends {b.end_date.strftime('%b %d')})"
             lines.append(
-                f"  {b.source_program} → {b.target_program}: "
+                f"  {_program_label(b.source_program)} → {_program_label(b.target_program)}: "
                 f"+{b.bonus_percentage:.0%}{expiry}"
             )
         lines.append("")
