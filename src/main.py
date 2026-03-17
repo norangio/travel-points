@@ -146,9 +146,18 @@ async def run_digest() -> None:
         f"Searched {len(search_stats)} routes, {total_raw} total raw results"
     )
 
-    # Step 5: Rank and take top N
-    all_deals.sort(key=lambda d: d.score, reverse=True)
+    # Step 5: Rank deals — prioritize by trip urgency (nearest departure),
+    # then by score within each trip
+    trip_urgency = _trip_urgency_order(trips)
+    all_deals.sort(
+        key=lambda d: (trip_urgency.get(d.trip_name, 99), -d.score),
+    )
     top_deals = all_deals[:max_deals]
+
+    # Sort search stats by trip urgency too
+    search_stats.sort(
+        key=lambda s: trip_urgency.get(s.get("trip_name", ""), 99),
+    )
 
     # Step 6: Build and send email
     email_content = build_digest_email(
@@ -375,6 +384,29 @@ def _parse_date(val) -> date | None:
         return datetime.strptime(str(val), "%Y-%m-%d").date()
     except ValueError:
         return None
+
+
+def _trip_urgency_order(trips: list[dict]) -> dict[str, int]:
+    """
+    Assign urgency rank to trips based on earliest outbound departure.
+
+    Nearest trip = rank 0 (shown first). Deals are sorted by
+    (trip_urgency, -score) so the most imminent trip's best deals
+    appear at the top.
+    """
+    trip_dates: list[tuple[date | None, str]] = []
+    for trip in trips:
+        name = trip.get("name", "Unnamed Trip")
+        outbound = trip.get("outbound", {})
+        earliest = _parse_date(outbound.get("earliest")) if outbound else None
+        if not earliest:
+            dr = trip.get("date_range", {})
+            earliest = _parse_date(dr.get("earliest"))
+        trip_dates.append((earliest, name))
+
+    # Sort by date (None → end)
+    trip_dates.sort(key=lambda t: t[0] or date.max)
+    return {name: i for i, (_, name) in enumerate(trip_dates)}
 
 
 def main() -> None:

@@ -117,8 +117,21 @@ class SeatsAeroClient:
             return []
 
 
+_LOGGED_RAW_KEYS = False  # one-shot diagnostic flag
+
+
 def parse_availability(raw: dict, trip_detail: dict | None = None) -> AwardAvailability:
     """Parse a raw seats.aero result + optional trip detail into our model."""
+    global _LOGGED_RAW_KEYS
+    if not _LOGGED_RAW_KEYS:
+        logger.info(f"[DIAG] raw keys: {sorted(raw.keys())}")
+        if trip_detail:
+            logger.info(f"[DIAG] trip_detail keys: {sorted(trip_detail.keys())}")
+        route_obj = raw.get("Route")
+        if route_obj and isinstance(route_obj, dict):
+            logger.info(f"[DIAG] Route sub-keys: {sorted(route_obj.keys())}")
+        _LOGGED_RAW_KEYS = True
+
     availability_id = raw.get("ID", raw.get("id", ""))
     source = raw.get("Source", raw.get("source", ""))
 
@@ -146,21 +159,25 @@ def parse_availability(raw: dict, trip_detail: dict | None = None) -> AwardAvail
         or _parse_int(raw.get("RemainingSeats", raw.get("remaining_seats", 0)))
     )
 
-    if not points_cost:
-        logger.debug(
-            f"zero cost for {source} {raw.get('OriginAirport','')}→"
-            f"{raw.get('DestinationAirport','')} | "
-            f"cabin_code={cabin_code} | "
-            f"keys with 'cost'/'mile': "
-            f"{[(k,v) for k,v in raw.items() if any(t in k.lower() for t in ('cost','mile','seat','remain','avail'))]}"
-        )
+    # Origin/destination: may be flat or nested inside Route object
+    route_obj = raw.get("Route", {}) if isinstance(raw.get("Route"), dict) else {}
+    origin = (
+        raw.get("OriginAirport")
+        or route_obj.get("OriginAirport")
+        or raw.get("origin_airport", "")
+    )
+    destination = (
+        raw.get("DestinationAirport")
+        or route_obj.get("DestinationAirport")
+        or raw.get("destination_airport", "")
+    )
 
     # Base fields
     avail = AwardAvailability(
         id=str(availability_id),
         source=source,
-        origin=raw.get("OriginAirport", raw.get("origin_airport", "")),
-        destination=raw.get("DestinationAirport", raw.get("destination_airport", "")),
+        origin=origin,
+        destination=destination,
         departure_date=departure_date,
         cabin=cabin_val,
         points_cost=points_cost,
@@ -183,16 +200,41 @@ def parse_availability(raw: dict, trip_detail: dict | None = None) -> AwardAvail
     return avail
 
 
+_LOGGED_TRIP_KEYS = False  # one-shot trip diagnostic
+
+
 def _parse_trip_detail(avail: AwardAvailability, trip: dict) -> None:
     """Parse trip detail response to extract segments and layovers."""
+    global _LOGGED_TRIP_KEYS
+    if not _LOGGED_TRIP_KEYS:
+        logger.info(f"[DIAG] trip detail keys: {sorted(trip.keys())}")
+        _LOGGED_TRIP_KEYS = True
+
     segments_data = trip.get("Segments", trip.get("segments", []))
+
+    # Log segment structure once for diagnostics
+    if segments_data:
+        if not hasattr(_parse_trip_detail, "_logged_seg"):
+            _parse_trip_detail._logged_seg = True
+            first_seg = segments_data[0]
+            if isinstance(first_seg, dict):
+                logger.info(f"[DIAG] segment keys: {sorted(first_seg.keys())}")
+
     if not segments_data:
         return
 
     segments: list[FlightSegment] = []
     for seg in segments_data:
-        departure_str = seg.get("DepartureTime", seg.get("departure_time", ""))
-        arrival_str = seg.get("ArrivalTime", seg.get("arrival_time", ""))
+        departure_str = (
+            seg.get("DepartureTime")
+            or seg.get("DepartureDateTime")
+            or seg.get("departure_time", "")
+        )
+        arrival_str = (
+            seg.get("ArrivalTime")
+            or seg.get("ArrivalDateTime")
+            or seg.get("arrival_time", "")
+        )
 
         dep_dt = _parse_datetime(departure_str)
         arr_dt = _parse_datetime(arrival_str)
@@ -201,17 +243,29 @@ def _parse_trip_detail(avail: AwardAvailability, trip: dict) -> None:
         if dep_dt and arr_dt:
             duration = (arr_dt - dep_dt).total_seconds() / 3600
 
-        carrier = seg.get(
-            "OperatingCarrier",
-            seg.get("operating_carrier", seg.get("Carrier", "")),
+        carrier = (
+            seg.get("OperatingCarrier")
+            or seg.get("OperatingAirline")
+            or seg.get("operating_carrier")
+            or seg.get("Carrier")
+            or seg.get("AirlineCode", "")
         )
 
         segment = FlightSegment(
-            origin=seg.get("Origin", seg.get("origin", "")),
-            destination=seg.get("Destination", seg.get("destination", "")),
+            origin=(
+                seg.get("Origin")
+                or seg.get("OriginAirport")
+                or seg.get("origin", "")
+            ),
+            destination=(
+                seg.get("Destination")
+                or seg.get("DestinationAirport")
+                or seg.get("destination", "")
+            ),
             operating_carrier=carrier,
-            flight_number=seg.get(
-                "FlightNumber", seg.get("flight_number", "")
+            flight_number=(
+                seg.get("FlightNumber")
+                or seg.get("flight_number", "")
             ),
             departure=dep_dt,
             arrival=arr_dt,
