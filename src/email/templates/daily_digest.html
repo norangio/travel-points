@@ -111,6 +111,52 @@
 </tr>
 
 {% if deals %}
+<!-- QUICK LOOK TABLE -->
+<tr>
+<td style="padding: 0 30px 8px 30px;">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+    <tr>
+        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 14px; font-weight: bold; color: #333333; padding-bottom: 10px;">
+            Quick Look
+        </td>
+    </tr>
+    </table>
+
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border: 1px solid #d9e2ec; border-collapse: collapse;">
+    <tr>
+        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 12px; font-weight: bold; color: #234; background-color: #eef4fb; padding: 8px 10px; border-bottom: 1px solid #d9e2ec;">
+            Route
+        </td>
+        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 12px; font-weight: bold; color: #234; background-color: #eef4fb; padding: 8px 10px; border-bottom: 1px solid #d9e2ec;">
+            Date
+        </td>
+        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 12px; font-weight: bold; color: #234; background-color: #eef4fb; padding: 8px 10px; border-bottom: 1px solid #d9e2ec;">
+            Airline
+        </td>
+        <td align="right" style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 12px; font-weight: bold; color: #234; background-color: #eef4fb; padding: 8px 10px; border-bottom: 1px solid #d9e2ec;">
+            Points
+        </td>
+    </tr>
+    {% for row in deal_summary_rows %}
+    <tr>
+        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 12px; color: #333333; padding: 8px 10px; border-bottom: 1px solid #e8eef5;">
+            {{ row.route }}
+        </td>
+        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 12px; color: #555555; padding: 8px 10px; border-bottom: 1px solid #e8eef5; white-space: nowrap;">
+            {{ row.date }}
+        </td>
+        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 12px; color: #555555; padding: 8px 10px; border-bottom: 1px solid #e8eef5;">
+            {{ row.airline }}
+        </td>
+        <td align="right" style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 12px; color: #0066cc; font-weight: bold; padding: 8px 10px; border-bottom: 1px solid #e8eef5; white-space: nowrap;">
+            {{ row.points }}
+        </td>
+    </tr>
+    {% endfor %}
+    </table>
+</td>
+</tr>
+
 <!-- DEAL CARDS -->
 {% for deal in deals %}
 <tr>

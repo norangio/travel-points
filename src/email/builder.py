@@ -9,7 +9,6 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
-from markupsafe import Markup
 
 from src.models import LayoverAnalysis, ScoredDeal, TransferBonus
 
@@ -56,6 +55,7 @@ def build_digest_email(
     context = {
         "digest_date": digest_date,
         "deals": deals,
+        "deal_summary_rows": _build_deal_summary_rows(deals),
         "bonus_alerts": bonus_alerts,
         "all_bonuses": bonuses,
         "balances": balances,
@@ -101,6 +101,30 @@ def _classify_bonuses(
         else:
             result["active"].append(b)
     return result
+
+
+def _build_deal_summary_rows(deals: list[ScoredDeal]) -> list[dict[str, str]]:
+    """Build compact summary rows for the HTML quick-look table."""
+    rows: list[dict[str, str]] = []
+    for deal in deals:
+        airline = deal.airline_name or ", ".join(deal.availability.operating_carriers)
+        if deal.product_name:
+            airline = f"{airline} ({deal.product_name})" if airline else deal.product_name
+        if not airline:
+            airline = deal.availability.source
+
+        points_display = (
+            f"{deal.best_path.points_needed_per_person:,} "
+            f"{deal.best_path.source_display_name}/person"
+        )
+
+        rows.append({
+            "route": f"{deal.availability.origin} → {deal.availability.destination}",
+            "date": deal.availability.departure_date.strftime("%b %d, %Y"),
+            "airline": airline,
+            "points": points_display,
+        })
+    return rows
 
 
 def _build_plain_text(

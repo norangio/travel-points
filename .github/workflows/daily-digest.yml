@@ -2,10 +2,8 @@ name: Evening Points Digest
 
 on:
   schedule:
-    # 01:00 UTC = 6:00 PM PDT, 02:00 UTC = 6:00 PM PST.
-    # The first step gates scheduled runs so only the true 6 PM Pacific slot proceeds.
+    # 01:00 UTC = 6:00 PM PDT (5:00 PM PST).
     - cron: "0 1 * * *"
-    - cron: "0 2 * * *"
   workflow_dispatch: # manual trigger for testing
 
 jobs:
@@ -23,35 +21,14 @@ jobs:
       SEATS_AERO_MAX_TRIP_DETAILS_PER_SEARCH: ${{ vars.SEATS_AERO_MAX_TRIP_DETAILS_PER_SEARCH || '6' }}
 
     steps:
-      - name: Gate scheduled runs to 6 PM Pacific
-        id: schedule_gate
-        shell: bash
-        run: |
-          if [ "${{ github.event_name }}" != "schedule" ]; then
-            echo "should_run=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          pacific_hour="$(TZ=America/Los_Angeles date +%H)"
-          if [ "$pacific_hour" = "18" ]; then
-            echo "should_run=true" >> "$GITHUB_OUTPUT"
-            echo "Proceeding with scheduled digest at 6 PM Pacific."
-          else
-            echo "should_run=false" >> "$GITHUB_OUTPUT"
-            echo "Skipping schedule outside 6 PM Pacific. Current Pacific hour: $pacific_hour"
-          fi
-
       - uses: actions/checkout@v4
-        if: steps.schedule_gate.outputs.should_run == 'true'
 
       - uses: actions/setup-python@v5
-        if: steps.schedule_gate.outputs.should_run == 'true'
         with:
           python-version: "3.12"
           cache: pip
 
       - name: Restore previous state
-        if: steps.schedule_gate.outputs.should_run == 'true'
         uses: actions/cache/restore@v4
         with:
           path: state/last_run.json
@@ -60,17 +37,15 @@ jobs:
             deal-state-
 
       - name: Install dependencies
-        if: steps.schedule_gate.outputs.should_run == 'true'
         run: |
           pip install --upgrade pip
           pip install .
 
       - name: Run digest
-        if: steps.schedule_gate.outputs.should_run == 'true'
         run: python -m src.main
 
       - name: Save state for next run
-        if: always() && steps.schedule_gate.outputs.should_run == 'true'
+        if: always()
         uses: actions/cache/save@v4
         with:
           path: state/last_run.json

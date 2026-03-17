@@ -29,9 +29,8 @@ Layers intelligence on top of [seats.aero](https://seats.aero) Pro to answer: **
 
 ## GitHub Actions
 
-The digest runs daily at 6 PM Pacific. The workflow uses two UTC cron entries and
-an `America/Los_Angeles` gate so the actual run stays at 6 PM across both PST and PDT.
-Required secrets:
+The digest runs on a single GitHub Actions cron at `01:00 UTC`, which is `6:00 PM PDT`
+and `5:00 PM PST`. Required secrets:
 - `SEATS_AERO_API_KEY`
 - `RESEND_API_KEY`
 
@@ -45,6 +44,16 @@ Recommended GitHub Actions variables:
 - `SEATS_AERO_MAX_TRIP_DETAILS_PER_SEARCH`
 
 If `EMAIL_FROM_ADDRESS` is left unset, the workflow falls back to `onboarding@resend.dev`, which Resend treats as a test sender and typically only delivers to the account owner.
+
+## Local Email Preview
+
+You can render the digest locally without hitting seats.aero or sending email:
+
+```bash
+.venv/bin/python -m src.email.preview
+```
+
+That writes HTML and text preview files to the system temp directory so you can inspect the layout before running the workflow.
 
 ## Project Structure
 

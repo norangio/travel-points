@@ -60,7 +60,7 @@ trips:
 ## Deployment — GitHub Actions
 
 - **Workflow**: `.github/workflows/daily-digest.yml`
-- **Schedule**: 6:00 PM Pacific daily via cron (`01:00 UTC` in PDT, `02:00 UTC` in PST), plus manual `workflow_dispatch`
+- **Schedule**: single cron at `01:00 UTC` (`6:00 PM PDT`, `5:00 PM PST`), plus manual `workflow_dispatch`
 - **State persistence**: GitHub Actions cache (deal history with first_seen dates)
 - **Manual triggers**: `workflow_dispatch` does NOT save state — safe to test anytime without affecting history
 - **Required secrets**: `SEATS_AERO_API_KEY`, `RESEND_API_KEY`
@@ -71,6 +71,12 @@ trips:
 cd travel-points
 pip install .
 python -m src.main
+```
+
+Email preview without API/email side effects:
+
+```bash
+.venv/bin/python -m src.email.preview
 ```
 
 ## seats.aero API Field Reference
@@ -131,7 +137,7 @@ Implemented:
 - [x] Transfer partners updated to match actual Chase UR + Capital One partner lists (including Qatar)
 - [x] JAirlines fallback for airline carrier extraction when trip detail unavailable
 - [x] Email shows only deal score (0-100), removed confusing airline rating (x/10)
-- [x] GitHub Actions schedule pinned to 6 PM Pacific across PST/PDT
+- [x] Local email preview renderer for layout checks without running the workflow
 
 Not yet implemented:
 - [ ] Transfer bonus scrapers (FrequentMiler, TPG, AwardWallet) — Phase 2
