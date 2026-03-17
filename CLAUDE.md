@@ -23,7 +23,8 @@
 Matches the Morning Brief email styling from email-reports:
 - Calibri font, #0066cc blue headers, fluid 600px max-width, inline styles only
 - MSO conditionals for Outlook desktop
-- Sections: Transfer Bonus Alerts → Deal Cards (scored, ranked) → Layover Analysis (for long layovers) → Balances Footer
+- Sections: Transfer Bonus Alerts → Quick Look summary table → Deal Cards (scored, ranked) → Layover Analysis (for long layovers) → Balances Footer
+- Transfer bonus labels are expanded for readability (for example, `Avios` is shown as `Avios (British Airways / Iberia / Aer Lingus)`)
 - Both HTML and plain text versions
 
 ## Configuration
@@ -62,7 +63,7 @@ trips:
 - **Workflow**: `.github/workflows/daily-digest.yml`
 - **Schedule**: single cron at `01:00 UTC` (`6:00 PM PDT`, `5:00 PM PST`), plus manual `workflow_dispatch`
 - **State persistence**: GitHub Actions cache (deal history with first_seen dates)
-- **Manual triggers**: `workflow_dispatch` does NOT save state — safe to test anytime without affecting history
+- **Manual triggers**: `workflow_dispatch` does NOT save state and defaults to the first configured recipient unless `MANUAL_RUN_RECIPIENTS` or `EMAIL_RECIPIENTS_OVERRIDE` is set
 - **Required secrets**: `SEATS_AERO_API_KEY`, `RESEND_API_KEY`
 
 ## Running Locally
@@ -105,6 +106,12 @@ The seats.aero Partner API uses specific field names. These were discovered via 
 **Rate limiting**: the client now defaults to 1.0s spacing, respects `Retry-After` on 429s, caps trip-detail lookups per route search, and logs a structured `SEATS_AERO_USAGE` summary each run.
 **Transfer bonus scraping**: current-bonus pages are fetched at runtime from Frequent Miler, The Points Guy, and AwardWallet; manual `config.yaml` bonuses still merge in and cover edge cases.
 
+## March 16 Findings
+
+- Historical GitHub Actions runs confirmed the previous issue was the seats.aero **daily** quota, not a short-window per-second limit.
+- seats.aero resets at **midnight UTC**; on March 16, 2026 the logs showed two separate UTC days each hitting exactly 1,000 successful calls before 429s started.
+- The current code reduces usage by prefiltering raw hits, capping trip-detail lookups per route, and enforcing a per-run HTTP request ceiling.
+
 ## Transfer Partners
 
 - `src/data/transfer_partners.yaml` — maps Chase UR (11 partners), Capital One (21 partners), United MileagePlus
@@ -124,7 +131,7 @@ The seats.aero Partner API uses specific field names. These were discovered via 
   - https://thepointsguy.com/loyalty-programs/current-transfer-bonuses/
   - https://awardwallet.com/news/credit-card-transfer-bonuses/
 
-## Current Phase: Phase 1 (Foundation)
+## Current Phase: Phase 2 (Bonus Scraping + Safer Daily Runs)
 
 Implemented:
 - [x] Project scaffolding, config loader, data models
@@ -143,6 +150,8 @@ Implemented:
 - [x] JAirlines fallback for airline carrier extraction when trip detail unavailable
 - [x] Email shows only deal score (0-100), removed confusing airline rating (x/10)
 - [x] Local email preview renderer for layout checks without running the workflow
+- [x] Quick Look table at the top of the email for route/date/airline/points scanning
+- [x] Human-readable transfer bonus labels in email output (for example, Avios family programs)
 - [x] Transfer bonus scrapers (Frequent Miler, TPG, AwardWallet) — best-effort runtime fetch
 
 Not yet implemented:
@@ -154,8 +163,8 @@ Not yet implemented:
 
 - [ ] Clean up one-shot diagnostic logging (`_LOGGED_RAW_KEYS`, `_LOGGED_TRIP_KEYS` flags in `seats_aero.py`) — useful during development but should be removed or put behind a DEBUG flag eventually
 - [ ] Segment-level `Carrier` is NOT in the API response — carrier info only exists at trip-level `Carriers` field. Consider parsing `FlightNumber` (e.g. "QR740") to extract per-segment carrier codes
-- [ ] After rate-limited run completes successfully: check the email output for correct airline names, routing info, and scoring display
-- [ ] Re-authenticate `gh` locally (or provide a fresh token) so private GitHub Actions logs can be inspected for the historical rate-limit failures
+- [ ] After the first scheduled post-fix run, inspect `SEATS_AERO_USAGE` in the GitHub Action log to confirm real-world request counts under the new caps
+- [ ] After the first scheduled post-fix run, check the live delivered email in Gmail/Outlook for final rendering quirks versus the local preview
 - [ ] Consider adding more airline products to `src/data/airline_products.yaml` if new carriers show up as "Unknown"
 - [ ] The scoring engine weights may need tuning based on real-world deal quality
 - [ ] Run is slower now by design because the default spacing is 1.0s and trip-detail lookups are capped; tune the env vars if the logs show plenty of quota headroom

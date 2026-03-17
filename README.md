@@ -12,6 +12,7 @@ Layers intelligence on top of [seats.aero](https://seats.aero) Pro to answer: **
 - Scores deals on cost, airline quality, routing, bonus urgency, and CPP value
 - Analyzes long layovers with hotel costs and transit options
 - Sends a styled HTML email digest every evening via Resend
+- Includes a Quick Look table at the top of the email so you can scan route, date, airline, and points cost before reading the full cards
 
 ## Setup
 
