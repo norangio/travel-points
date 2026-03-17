@@ -90,9 +90,12 @@ The seats.aero Partner API uses specific field names. These were discovered via 
 - `TotalDuration` = total travel time in **minutes**
 - `Connections` = number of connections (int)
 
-**Segment objects** (inside `AvailabilitySegments`):
-- Expected keys: `OriginAirport, DestinationAirport, Carrier, FlightNumber, DepartsAt, ArrivesAt, Aircraft`
+**Segment objects** (inside `AvailabilitySegments`) — confirmed from live API:
+- Keys: `AircraftCode, AircraftName, ArrivesAt, AvailabilityID, AvailabilityTripID, Cabin, CreatedAt, DepartsAt, DestinationAirport, Distance, Duration, FareClass, FlightNumber, ID, Order, OriginAirport, RouteID, Source, UpdatedAt`
+- **No `Carrier` key** in segments — carrier info is only at the trip-level `Carriers` field
 - Time format: ISO 8601 with timezone (e.g. `2026-06-10T10:00:00+00:00`)
+
+**Rate limiting**: seats.aero Pro allows ~2 req/sec. Client has 0.6s delay between requests + 429 retry with backoff (2s, 4s). Without this, runs hit 429 after ~20 rapid requests.
 
 ## Transfer Partners
 
@@ -130,10 +133,11 @@ Not yet implemented:
 ## Still To Do (next session)
 
 - [ ] Clean up one-shot diagnostic logging (`_LOGGED_RAW_KEYS`, `_LOGGED_TRIP_KEYS` flags in `seats_aero.py`) — useful during development but should be removed or put behind a DEBUG flag eventually
-- [ ] Verify segment field names from a real API response (we haven't seen actual `AvailabilitySegments` contents yet — the field names like `Carrier`, `DepartsAt`, `OriginAirport` are based on the top-level trip pattern, need confirmation from a live run)
-- [ ] After confirming the live run works: check the email output for correct airline names, routing info, and scoring display
+- [ ] Segment-level `Carrier` is NOT in the API response — carrier info only exists at trip-level `Carriers` field. Consider parsing `FlightNumber` (e.g. "QR740") to extract per-segment carrier codes
+- [ ] After rate-limited run completes successfully: check the email output for correct airline names, routing info, and scoring display
 - [ ] Consider adding more airline products to `src/data/airline_products.yaml` if new carriers show up as "Unknown"
 - [ ] The scoring engine weights may need tuning based on real-world deal quality
+- [ ] Run is slow now (~100 API calls × 0.6s = ~60s minimum) — could optimize by skipping trips calls for sources we know aren't transferable
 
 ## Git Commits
 
