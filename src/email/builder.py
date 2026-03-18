@@ -159,16 +159,21 @@ def _build_deal_summary_rows(deals: list[ScoredDeal]) -> list[dict[str, str]]:
         if not airline:
             airline = deal.availability.source
 
+        aircraft = ", ".join(deal.availability.aircraft_types) if deal.availability.aircraft_types else ""
+
         points_display = (
             f"{deal.best_path.points_needed_per_person:,} "
-            f"{deal.best_path.source_display_name}/person"
+            f"{deal.best_path.source_display_name}/pp"
         )
 
         rows.append({
             "route": f"{deal.availability.origin} → {deal.availability.destination}",
-            "date": deal.availability.departure_date.strftime("%b %d, %Y"),
+            "date": deal.availability.departure_date.strftime("%b %d"),
             "airline": airline,
+            "aircraft": aircraft,
             "points": points_display,
+            "trip_name": deal.trip_name,
+            "score": str(int(deal.score)),
         })
     return rows
 

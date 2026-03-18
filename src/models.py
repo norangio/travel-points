@@ -117,6 +117,7 @@ class AwardAvailability:
     num_connections: int = 0
     max_layover_hours: float = 0.0
     operating_carriers: list[str] = field(default_factory=list)
+    aircraft_types: list[str] = field(default_factory=list)
     raw_data: dict = field(default_factory=dict)
 
 

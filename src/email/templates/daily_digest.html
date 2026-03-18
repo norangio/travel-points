@@ -124,33 +124,28 @@
 
     <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border: 1px solid #d9e2ec; border-collapse: collapse;">
     <tr>
-        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 12px; font-weight: bold; color: #234; background-color: #eef4fb; padding: 8px 10px; border-bottom: 1px solid #d9e2ec;">
-            Route
-        </td>
-        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 12px; font-weight: bold; color: #234; background-color: #eef4fb; padding: 8px 10px; border-bottom: 1px solid #d9e2ec;">
-            Date
-        </td>
-        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 12px; font-weight: bold; color: #234; background-color: #eef4fb; padding: 8px 10px; border-bottom: 1px solid #d9e2ec;">
-            Airline
-        </td>
-        <td align="right" style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 12px; font-weight: bold; color: #234; background-color: #eef4fb; padding: 8px 10px; border-bottom: 1px solid #d9e2ec;">
-            Points
+        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 11px; font-weight: bold; color: #234; background-color: #eef4fb; padding: 6px 8px; border-bottom: 1px solid #d9e2ec;">Route</td>
+        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 11px; font-weight: bold; color: #234; background-color: #eef4fb; padding: 6px 8px; border-bottom: 1px solid #d9e2ec;">Date</td>
+        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 11px; font-weight: bold; color: #234; background-color: #eef4fb; padding: 6px 8px; border-bottom: 1px solid #d9e2ec;">Airline · Aircraft</td>
+        <td align="right" style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 11px; font-weight: bold; color: #234; background-color: #eef4fb; padding: 6px 8px; border-bottom: 1px solid #d9e2ec;">Points/pp</td>
+    </tr>
+    {% set ns = namespace(current_trip='') %}
+    {% for row in deal_summary_rows %}
+    {% if row.trip_name != ns.current_trip %}
+    {% set ns.current_trip = row.trip_name %}
+    <tr>
+        <td colspan="4" style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 11px; font-weight: bold; color: #0066cc; background-color: #f0f6ff; padding: 5px 8px; border-bottom: 1px solid #d9e2ec; text-transform: uppercase; letter-spacing: 0.4px;">
+            {{ row.trip_name }}
         </td>
     </tr>
-    {% for row in deal_summary_rows %}
+    {% endif %}
     <tr>
-        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 12px; color: #333333; padding: 8px 10px; border-bottom: 1px solid #e8eef5;">
-            {{ row.route }}
+        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 12px; color: #333333; padding: 5px 8px; border-bottom: 1px solid #e8eef5; font-weight: bold;">{{ row.route }}</td>
+        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 12px; color: #555555; padding: 5px 8px; border-bottom: 1px solid #e8eef5; white-space: nowrap;">{{ row.date }}</td>
+        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 12px; color: #555555; padding: 5px 8px; border-bottom: 1px solid #e8eef5;">
+            {{ row.airline }}{% if row.aircraft %} <span style="color: #999999;">· {{ row.aircraft }}</span>{% endif %}
         </td>
-        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 12px; color: #555555; padding: 8px 10px; border-bottom: 1px solid #e8eef5; white-space: nowrap;">
-            {{ row.date }}
-        </td>
-        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 12px; color: #555555; padding: 8px 10px; border-bottom: 1px solid #e8eef5;">
-            {{ row.airline }}
-        </td>
-        <td align="right" style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 12px; color: #0066cc; font-weight: bold; padding: 8px 10px; border-bottom: 1px solid #e8eef5; white-space: nowrap;">
-            {{ row.points }}
-        </td>
+        <td align="right" style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 12px; color: #0066cc; font-weight: bold; padding: 5px 8px; border-bottom: 1px solid #e8eef5; white-space: nowrap;">{{ row.points }}</td>
     </tr>
     {% endfor %}
     </table>
@@ -160,132 +155,72 @@
 <!-- DEAL CARDS -->
 {% for deal in deals %}
 <tr>
-<td style="padding: 10px 30px;">
+<td style="padding: 8px 30px;">
     <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border: 1px solid #e0e0e0; border-radius: 6px; overflow: hidden;">
 
-    <!-- Deal Header: Score + Airline + Badges -->
+    <!-- Deal Header: Score + Airline + Badges (compact) -->
     <tr>
-        <td style="background-color: {{ '#e8f5e9' if deal.score >= 80 else '#fff8e1' if deal.score >= 60 else '#f5f5f5' }}; padding: 12px 16px;">
+        <td style="background-color: {{ '#e8f5e9' if deal.score >= 80 else '#fff8e1' if deal.score >= 60 else '#f5f5f5' }}; padding: 8px 14px;">
             <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
             <tr>
-                <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 14px; color: #333333;">
-                    <span style="font-size: 20px; font-weight: bold; color: {{ '#2e7d32' if deal.score >= 80 else '#f57f17' if deal.score >= 60 else '#666666' }};">{{ deal.score }}</span>
-                    <span style="color: #999999; font-size: 12px; padding-left: 4px;">/ 100</span>
-                    <span style="padding-left: 12px; font-size: 16px; font-weight: bold;">{{ deal.airline_name }}</span>
-                    {% if deal.product_name %}
-                    <span style="color: #666666; font-size: 13px;"> &ldquo;{{ deal.product_name }}&rdquo;</span>
-                    {% endif %}
-                </td>
-            </tr>
-            <tr>
-                <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 12px; padding-top: 4px;">
-                    {% if deal.direction_label %}
-                    <span style="display: inline-block; background-color: {{ '#0066cc' if deal.direction == 'outbound' else '#6a1b9a' }}; color: #ffffff; font-size: 10px; font-weight: bold; padding: 2px 8px; border-radius: 3px; text-transform: uppercase; letter-spacing: 0.5px;">{{ deal.direction_label }}</span>
-                    {% endif %}
-                    <span style="display: inline-block; background-color: {{ '#2e7d32' if deal.is_new else '#ff8f00' }}; color: #ffffff; font-size: 10px; font-weight: bold; padding: 2px 8px; border-radius: 3px; text-transform: uppercase; letter-spacing: 0.5px; margin-left: 4px;">{{ deal.freshness_label }}</span>
-                    {% if deal.trip_name %}
-                    <span style="color: #888888;"> · {{ deal.trip_name }}</span>
-                    {% endif %}
-                    {% if deal.first_seen and not deal.is_new %}
-                    <span style="color: #999999;"> · First seen {{ deal.first_seen.strftime('%b %d') }}</span>
-                    {% endif %}
+                <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 13px; color: #333333;">
+                    <span style="font-size: 18px; font-weight: bold; color: {{ '#2e7d32' if deal.score >= 80 else '#f57f17' if deal.score >= 60 else '#666666' }};">{{ deal.score }}</span>
+                    <span style="color: #999999; font-size: 11px;">/100</span>
+                    <span style="padding-left: 10px; font-size: 15px; font-weight: bold;">{{ deal.airline_name }}</span>
+                    {% if deal.product_name %}<span style="color: #666666; font-size: 12px;"> &ldquo;{{ deal.product_name }}&rdquo;</span>{% endif %}
+                    <span style="padding-left: 8px;">
+                    {% if deal.direction_label %}<span style="display: inline-block; background-color: {{ '#0066cc' if deal.direction == 'outbound' else '#6a1b9a' }}; color: #ffffff; font-size: 10px; font-weight: bold; padding: 1px 6px; border-radius: 3px; text-transform: uppercase;">{{ deal.direction_label }}</span>{% endif %}
+                    <span style="display: inline-block; background-color: {{ '#2e7d32' if deal.is_new else '#ff8f00' }}; color: #ffffff; font-size: 10px; font-weight: bold; padding: 1px 6px; border-radius: 3px; text-transform: uppercase; margin-left: 3px;">{{ deal.freshness_label }}</span>
+                    </span>
+                    {% if deal.trip_name %}<span style="color: #888888; font-size: 12px;"> · {{ deal.trip_name }}</span>{% endif %}
                 </td>
             </tr>
             </table>
         </td>
     </tr>
 
-    <!-- Route + Date -->
+    <!-- Route + Date + Routing (combined compact row) -->
     <tr>
-        <td style="padding: 14px 16px 8px 16px;">
+        <td style="padding: 10px 14px 8px 14px;">
             <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
             <tr>
-                <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 18px; font-weight: bold; color: #0066cc;">
+                <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 17px; font-weight: bold; color: #0066cc;">
                     {{ deal.availability.origin }} → {{ deal.availability.destination }}
                 </td>
-                <td align="right" style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 14px; color: #666666;">
+                <td align="right" style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 13px; color: #666666; white-space: nowrap;">
                     {{ deal.availability.departure_date.strftime('%b %d, %Y') }}
                 </td>
             </tr>
+            <tr>
+                <td colspan="2" style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 12px; color: #777777; padding-top: 3px;">
+                    {% if deal.availability.num_connections == 0 %}Nonstop{% else %}{{ deal.availability.num_connections }} stop{{ 's' if deal.availability.num_connections > 1 else '' }}{% if deal.availability.max_layover_hours %} · {{ deal.availability.max_layover_hours }}h layover{% endif %}{% endif %}{% if deal.availability.total_travel_hours %} · {{ deal.availability.total_travel_hours }}h total{% endif %}{% if deal.availability.seats_available %} · {{ deal.availability.seats_available }} seat{{ 's' if deal.availability.seats_available != 1 else '' }}{% endif %}{% if deal.availability.aircraft_types %} · {{ deal.availability.aircraft_types | join(' / ') }}{% endif %}{% if deal.availability.operating_carriers and deal.availability.operating_carriers | join(',') != deal.airline_name %} · {{ deal.availability.operating_carriers | join(', ') }}{% endif %}
+                </td>
+            </tr>
             </table>
         </td>
     </tr>
 
-    <!-- Routing Info -->
+    <!-- Cost Breakdown (compact) -->
     <tr>
-        <td style="padding: 0 16px 10px 16px;">
+        <td style="padding: 8px 14px; background-color: #fafafa; border-top: 1px solid #eee;">
             <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
             <tr>
-                <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 14px; color: #666666;">
-                    {% if deal.availability.num_connections == 0 %}
-                    Nonstop
-                    {% else %}
-                    {{ deal.availability.num_connections }} stop{{ 's' if deal.availability.num_connections > 1 else '' }}
-                    {% if deal.availability.max_layover_hours %}
-                     · {{ deal.availability.max_layover_hours }}h max layover
-                    {% endif %}
-                    {% endif %}
-                    {% if deal.availability.total_travel_hours %}
-                     · {{ deal.availability.total_travel_hours }}h total
-                    {% endif %}
-                    {% if deal.availability.seats_available %}
-                     · {{ deal.availability.seats_available }} seat{{ 's' if deal.availability.seats_available != 1 else '' }}
-                    {% endif %}
-                </td>
-            </tr>
-            {% if deal.availability.operating_carriers %}
-            <tr>
-                <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 12px; color: #999999; padding-top: 2px;">
-                    Operated by: {{ deal.availability.operating_carriers | join(', ') }}
-                </td>
-            </tr>
-            {% endif %}
-            </table>
-        </td>
-    </tr>
-
-    <!-- Cost Breakdown -->
-    <tr>
-        <td style="padding: 10px 16px; background-color: #fafafa; border-top: 1px solid #eee;">
-            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
-            <tr>
-                <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 14px; color: #666666; padding-bottom: 4px;">
-                    Award price: {{ '{:,}'.format(deal.availability.points_cost) }} {{ deal.availability.source }} points/person
+                <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 15px; font-weight: bold; color: #0066cc;">
+                    {{ '{:,}'.format(deal.best_path.points_needed_per_person) }} {{ deal.best_path.source_display_name }}/pp
+                    {% if deal.best_path.has_active_bonus and deal.best_path.bonus %}<span style="font-size: 12px; color: #009933; font-weight: normal;"> +{{ (deal.best_path.bonus.bonus_percentage * 100) | int }}% bonus{% if deal.best_path.bonus.days_remaining is not none %} ({{ deal.best_path.bonus.days_remaining }}d left){% endif %}</span>{% endif %}
                 </td>
             </tr>
             <tr>
-                <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 16px; font-weight: bold; color: #0066cc;">
-                    YOUR COST: {{ '{:,}'.format(deal.best_path.points_needed_per_person) }} {{ deal.best_path.source_display_name }}/person
+                <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 13px; color: #333333; padding-top: 3px;">
+                    {{ travelers }} travelers: <strong>{{ '{:,}'.format(deal.best_path.points_needed_total) }} pts</strong>
+                    {% if deal.best_path.affordable_both %}<span style="color: #2e7d32; font-weight: bold;"> ✓ bookable</span><span style="color: #888888; font-size: 12px;"> ({{ '{:,}'.format(deal.best_path.balance_remaining) }} remaining)</span>{% elif deal.best_path.affordable_one %}<span style="color: #f57f17;"> ⚠ 1 traveler only</span>{% else %}<span style="color: #cc3300;"> ✗ need more points</span>{% endif %}
+                    {% if deal.cpp_value %}<span style="color: {{ '#2e7d32' if deal.cpp_value >= 3.0 else '#888888' }}; font-size: 12px;"> · {{ deal.cpp_value }}cpp{% if deal.cpp_value >= 3.0 %} ★{% endif %}</span>{% endif %}
                 </td>
             </tr>
-            {% if deal.best_path.has_active_bonus and deal.best_path.bonus %}
+            {% if deal.availability.points_cost != deal.best_path.points_needed_per_person %}
             <tr>
-                <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 13px; color: #009933; padding-top: 2px;">
-                    +{{ (deal.best_path.bonus.bonus_percentage * 100) | int }}% transfer bonus active
-                    {% if deal.best_path.bonus.days_remaining is not none %}
-                    — {{ deal.best_path.bonus.days_remaining }} days remaining
-                    {% endif %}
-                </td>
-            </tr>
-            {% endif %}
-            <tr>
-                <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 14px; color: #333333; padding-top: 6px;">
-                    Total for {{ travelers }}: <strong>{{ '{:,}'.format(deal.best_path.points_needed_total) }} points</strong>
-                    {% if deal.best_path.affordable_both %}
-                    <span style="color: #2e7d32; font-weight: bold;"> ✓ You can book this</span>
-                    <span style="color: #666666; font-size: 13px;"> ({{ '{:,}'.format(deal.best_path.balance_remaining) }} remaining)</span>
-                    {% elif deal.best_path.affordable_one %}
-                    <span style="color: #f57f17;"> ⚠ Can book 1, not both</span>
-                    {% else %}
-                    <span style="color: #cc3300;"> ✗ Need more points</span>
-                    {% endif %}
-                </td>
-            </tr>
-            {% if deal.cpp_value %}
-            <tr>
-                <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 13px; color: {{ '#2e7d32' if deal.cpp_value >= 3.0 else '#666666' }}; padding-top: 4px;">
-                    {% if deal.cash_price_usd %}Cash ~${{ '{:,.0f}'.format(deal.cash_price_usd) }} → {% endif %}{{ deal.cpp_value }} cpp value
-                    {% if deal.cpp_value >= 3.0 %} — Excellent{% elif deal.cpp_value >= 2.0 %} — Good{% endif %}
+                <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 11px; color: #aaaaaa; padding-top: 2px;">
+                    Award: {{ '{:,}'.format(deal.availability.points_cost) }} {{ deal.availability.source }} pts/pp
                 </td>
             </tr>
             {% endif %}
@@ -296,23 +231,11 @@
     <!-- Alternative Transfer Paths (if more than 1) -->
     {% if deal.all_paths | length > 1 %}
     <tr>
-        <td style="padding: 8px 16px; border-top: 1px solid #eee;">
-            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
-            <tr>
-                <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 12px; color: #999999; padding-bottom: 4px;">
-                    Other transfer paths:
-                </td>
-            </tr>
+        <td style="padding: 5px 14px 6px 14px; border-top: 1px solid #eee;">
+            <span style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 11px; color: #aaaaaa;">Also: </span>
             {% for path in deal.all_paths[1:3] %}
-            <tr>
-                <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 13px; color: #666666; padding: 1px 0;">
-                    {{ '{:,}'.format(path.points_needed_per_person) }} {{ path.source_display_name }}
-                    {% if path.has_active_bonus %}<span style="color: #009933;">(bonus)</span>{% endif %}
-                    {% if path.affordable_both %}<span style="color: #2e7d32;">✓</span>{% endif %}
-                </td>
-            </tr>
+            <span style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 12px; color: #666666;">{{ '{:,}'.format(path.points_needed_per_person) }} {{ path.source_display_name }}{% if path.has_active_bonus %} <span style="color: #009933;">(bonus)</span>{% endif %}{% if path.affordable_both %} <span style="color: #2e7d32;">✓</span>{% endif %}{% if not loop.last %} &nbsp;·&nbsp; {% endif %}</span>
             {% endfor %}
-            </table>
         </td>
     </tr>
     {% endif %}

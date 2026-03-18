@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import math
 import os
 import sys
 from dataclasses import dataclass
@@ -263,7 +264,7 @@ async def run_digest() -> None:
     all_deals.sort(
         key=lambda d: (trip_urgency.get(d.trip_name, 99), -d.score),
     )
-    top_deals = all_deals[:max_deals]
+    top_deals = _allocate_deals_per_trip(all_deals, trip_urgency, max_deals)
 
     # Sort search stats by trip urgency too
     search_stats.sort(
@@ -632,6 +633,35 @@ def _request_budget_exhausted(
 ) -> bool:
     """Whether the hard seats.aero HTTP request budget has been reached."""
     return client.stats.total_http_requests >= max_requests_per_run
+
+
+def _allocate_deals_per_trip(
+    all_deals: list[ScoredDeal],
+    trip_urgency: dict[str, int],
+    max_deals: int,
+) -> list[ScoredDeal]:
+    """
+    Guarantee each trip gets representation in the email.
+
+    Splits max_deals evenly across trips (minimum 3 per trip), then
+    re-sorts by urgency + score for display order.
+    """
+    trip_names = sorted(
+        {d.trip_name for d in all_deals},
+        key=lambda n: trip_urgency.get(n, 99),
+    )
+    num_trips = len(trip_names)
+    if num_trips <= 1:
+        return all_deals[:max_deals]
+
+    slots = max(3, math.ceil(max_deals / num_trips))
+    selected: list[ScoredDeal] = []
+    for name in trip_names:
+        trip_deals = [d for d in all_deals if d.trip_name == name]
+        selected.extend(trip_deals[:slots])
+
+    selected.sort(key=lambda d: (trip_urgency.get(d.trip_name, 99), -d.score))
+    return selected[:max_deals]
 
 
 def _resolve_recipients(email_config: dict, settings) -> list[str]:

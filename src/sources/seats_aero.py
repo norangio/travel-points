@@ -399,7 +399,12 @@ def _parse_trip_detail(avail: AwardAvailability, trip: dict) -> None:
             departure=dep_dt,
             arrival=arr_dt,
             duration_hours=round(duration, 1),
-            aircraft=seg.get("Aircraft", seg.get("aircraft", "")),
+            aircraft=(
+                seg.get("AircraftName")
+                or seg.get("AircraftCode")
+                or seg.get("Aircraft")
+                or seg.get("aircraft", "")
+            ),
         )
         segments.append(segment)
 
@@ -437,6 +442,19 @@ def _parse_trip_detail(avail: AwardAvailability, trip: dict) -> None:
 
     avail.layovers = layovers
     avail.max_layover_hours = max_layover
+
+    # Aircraft types — prefer trip-level Aircraft field, fall back to unique segment AircraftName/Code
+    aircraft_str = trip.get("Aircraft", "")
+    if aircraft_str:
+        avail.aircraft_types = [a.strip() for a in str(aircraft_str).split(",") if a.strip()]
+    elif segments:
+        seen: set[str] = set()
+        types: list[str] = []
+        for s in segments:
+            if s.aircraft and s.aircraft not in seen:
+                seen.add(s.aircraft)
+                types.append(s.aircraft)
+        avail.aircraft_types = types
 
     # Total travel time from segments (if not already set from TotalDuration)
     if (
