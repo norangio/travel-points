@@ -111,6 +111,7 @@ def build_digest_email(
         "search_stats": stats,
         "total_routes_searched": total_routes,
         "total_raw_results": total_raw_results,
+        "trip_date_blurbs": _build_trip_date_blurbs(config),
     }
 
     # Render HTML
@@ -176,6 +177,64 @@ def _build_deal_summary_rows(deals: list[ScoredDeal]) -> list[dict[str, str]]:
             "score": str(int(deal.score)),
         })
     return rows
+
+
+def _build_trip_date_blurbs(config: dict) -> dict[str, str]:
+    """Build formatted date range blurbs per trip name, flex-adjusted."""
+    from datetime import date, timedelta
+
+    def _parse(val) -> date | None:
+        if val is None:
+            return None
+        if isinstance(val, date):
+            return val
+        try:
+            from datetime import datetime
+            return datetime.strptime(str(val), "%Y-%m-%d").date()
+        except ValueError:
+            return None
+
+    def _fmt(d: date | None) -> str:
+        return d.strftime("%b %d") if d else "?"
+
+    blurbs: dict[str, str] = {}
+    for trip in config.get("trips", []):
+        name = trip.get("name", "Unnamed Trip")
+        flex = trip.get("flexibility_days", 0)
+        parts = []
+
+        outbound = trip.get("outbound")
+        if outbound:
+            e = _parse(outbound.get("earliest"))
+            l = _parse(outbound.get("latest"))
+            if e and flex:
+                e = e - timedelta(days=flex)
+            if l and flex:
+                l = l + timedelta(days=flex)
+            parts.append(f"Outbound: {_fmt(e)} – {_fmt(l)}")
+
+        return_cfg = trip.get("return")
+        if return_cfg:
+            e = _parse(return_cfg.get("earliest"))
+            l = _parse(return_cfg.get("latest"))
+            if e and flex:
+                e = e - timedelta(days=flex)
+            if l and flex:
+                l = l + timedelta(days=flex)
+            parts.append(f"Return: {_fmt(e)} – {_fmt(l)}")
+
+        if not parts:
+            dr = trip.get("date_range", {})
+            e = _parse(dr.get("earliest"))
+            l = _parse(dr.get("latest"))
+            if e and flex:
+                e = e - timedelta(days=flex)
+            if l and flex:
+                l = l + timedelta(days=flex)
+            parts.append(f"{_fmt(e)} – {_fmt(l)}")
+
+        blurbs[name] = " · ".join(parts)
+    return blurbs
 
 
 def _build_plain_text(

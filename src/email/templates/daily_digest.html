@@ -161,10 +161,17 @@
 <td style="padding: 16px 30px 4px 30px;">
     <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
     <tr>
-        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 13px; font-weight: bold; color: #0066cc; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #0066cc; padding-bottom: 6px;">
+        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 13px; font-weight: bold; color: #0066cc; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #0066cc; padding-bottom: 4px;">
             {{ deal.trip_name }}
         </td>
     </tr>
+    {% if trip_date_blurbs.get(deal.trip_name) %}
+    <tr>
+        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 12px; color: #777777; padding-top: 4px;">
+            {{ trip_date_blurbs[deal.trip_name] }}
+        </td>
+    </tr>
+    {% endif %}
     </table>
 </td>
 </tr>
