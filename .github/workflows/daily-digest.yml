@@ -2,8 +2,8 @@ name: Evening Points Digest
 
 on:
   schedule:
-    # 01:00 UTC = 6:00 PM PDT (5:00 PM PST).
-    - cron: "0 1 * * *"
+    # 00:00 UTC = 4:00 PM PST (5:00 PM PDT).
+    - cron: "0 0 * * *"
   workflow_dispatch: # manual trigger for testing
 
 jobs:
