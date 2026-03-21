@@ -2,7 +2,7 @@
 
 balances:
   chase_ur: 155000
-  capital_one: 267218
+  capital_one: 94000
   united_miles: 73000
 
 origins:
@@ -10,6 +10,10 @@ origins:
   - LAX
   - SFO
   - SNA
+  - DEN
+  - SEA
+  - PHX
+  - SLC
 
 cabin: business  # only business class
 
@@ -20,14 +24,12 @@ trips:
   - name: "Portugal/Spain Summer 2026"
     destinations:
       - region: europe
-        preferred_airports: [BCN, LIS, MAD, LHR, CDG]
-    outbound:
-      earliest: "2026-06-04"
-      latest: "2026-06-11"
+        preferred_airports: [BCN, MAD, LHR, CDG, FRA]
+    # outbound booked: JFK → FRA on 2026-06-09
     return:
-      earliest: "2026-06-18"
-      latest: "2026-06-28"
-    flexibility_days: 3
+      earliest: "2026-06-15"
+      latest: "2026-06-17"
+    flexibility_days: 0
     priority: high
 
   - name: "Asia Winter 2027"
