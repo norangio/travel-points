@@ -8,7 +8,14 @@ from datetime import date, timedelta
 from pathlib import Path
 
 from src.email.builder import build_digest_email
-from src.models import AwardAvailability, ScoredDeal, TransferBonus, TransferPath
+from src.models import (
+    AwardAvailability,
+    LayoverAnalysis,
+    ScoredDeal,
+    TransferBonus,
+    TransferPath,
+    TransitOption,
+)
 
 
 def render_preview(output_dir: Path | None = None) -> tuple[Path, Path]:
@@ -61,9 +68,9 @@ def _sample_deals() -> list[ScoredDeal]:
                 departure_date=today + timedelta(days=82),
                 points_cost=60000,
                 seats_available=2,
-                total_travel_hours=15.5,
+                total_travel_hours=18.0,
                 num_connections=1,
-                max_layover_hours=2.5,
+                max_layover_hours=5.5,
                 operating_carriers=["TP"],
             ),
             score=88,
@@ -74,6 +81,13 @@ def _sample_deals() -> list[ScoredDeal]:
                 points_needed_per_person=50000,
                 points_needed_total=100000,
                 has_active_bonus=True,
+                bonus=TransferBonus(
+                    source_program="chase_ur",
+                    target_program="avios",
+                    bonus_percentage=0.2,
+                    effective_rate=1.2,
+                    end_date=today + timedelta(days=8),
+                ),
                 effective_rate=1.2,
                 affordable_one=True,
                 affordable_both=True,
@@ -107,6 +121,21 @@ def _sample_deals() -> list[ScoredDeal]:
             product_name="A330 Business",
             trip_name="Portugal / Spain",
             direction="outbound",
+            layover_analyses=[
+                LayoverAnalysis(
+                    airport="MAD",
+                    city="Madrid",
+                    country="Spain",
+                    duration_hours=5.5,
+                    airport_hotel_usd=120,
+                    city_center_hotel_usd=85,
+                    transit_options=[
+                        TransitOption(mode="Metro", cost_usd=3, time_min=25, notes="direct from T4"),
+                        TransitOption(mode="Taxi", cost_usd=45, time_min=35, notes="direct"),
+                    ],
+                    notes="Metro is fastest — direct line from airport to city center",
+                ),
+            ],
         ),
         ScoredDeal(
             availability=AwardAvailability(

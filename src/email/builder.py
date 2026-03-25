@@ -150,32 +150,99 @@ def _classify_bonuses(
     return result
 
 
-def _build_deal_summary_rows(deals: list[ScoredDeal]) -> list[dict[str, str]]:
-    """Build compact summary rows for the HTML quick-look table."""
-    rows: list[dict[str, str]] = []
+def _build_deal_summary_rows(deals: list[ScoredDeal]) -> list[dict]:
+    """Build enriched summary rows for the unified deal table."""
+
+    def _fmt_hours(h: float) -> str:
+        return f"{h:.0f}h" if h == int(h) else f"{h:.1f}h"
+
+    rows: list[dict] = []
     for deal in deals:
-        airline = deal.airline_name or ", ".join(deal.availability.operating_carriers)
+        a = deal.availability
+        bp = deal.best_path
+
+        # Airline display
+        airline = deal.airline_name or ", ".join(a.operating_carriers)
         if deal.product_name:
             airline = f"{airline} ({deal.product_name})" if airline else deal.product_name
         if not airline:
-            airline = deal.availability.source
+            airline = a.source
 
-        aircraft = ", ".join(deal.availability.aircraft_types) if deal.availability.aircraft_types else ""
+        aircraft = ", ".join(a.aircraft_types) if a.aircraft_types else ""
 
         points_display = (
-            f"{deal.best_path.points_needed_per_person:,} "
-            f"{deal.best_path.source_display_name}/pp"
+            f"{bp.points_needed_per_person:,} "
+            f"{bp.source_display_name}/pp"
         )
 
+        # Stops + travel time
+        if a.num_connections == 0:
+            stops = "Nonstop"
+        else:
+            stops = f"{a.num_connections} stop{'s' if a.num_connections > 1 else ''}"
+            if a.max_layover_hours:
+                stops += f" · {_fmt_hours(a.max_layover_hours)} layover"
+        if a.total_travel_hours:
+            stops += f" · {_fmt_hours(a.total_travel_hours)}"
+
+        # Bonus text
+        bonus_text = ""
+        if bp.has_active_bonus and bp.bonus:
+            pct = int(bp.bonus.bonus_percentage * 100)
+            bonus_text = f"+{pct}%"
+            if bp.bonus.days_remaining is not None:
+                bonus_text += f" ({bp.bonus.days_remaining}d)"
+
+        # Alternative paths
+        alt_paths: list[str] = []
+        for path in deal.all_paths[1:3]:
+            alt = f"{path.points_needed_per_person:,} {path.source_display_name}"
+            if path.has_active_bonus:
+                alt += " (bonus)"
+            if path.affordable_both:
+                alt += " ✓"
+            alt_paths.append(alt)
+
+        # Layover summaries
+        layovers: list[dict] = []
+        for la in deal.layover_analyses:
+            hotel_parts: list[str] = []
+            if la.airport_hotel_usd:
+                hotel_parts.append(f"~${la.airport_hotel_usd}/night near airport")
+            if la.city_center_hotel_usd:
+                hotel_parts.append(f"~${la.city_center_hotel_usd}/night city center")
+
+            transit_parts: list[str] = []
+            for t in la.transit_options:
+                transit_parts.append(f"{t.mode} ~${t.cost_usd:.0f}/{t.time_min}min")
+
+            layovers.append({
+                "header": f"{la.city} ({la.airport}) — {_fmt_hours(la.duration_hours)}",
+                "hotels": hotel_parts,
+                "transit": transit_parts,
+                "notes": la.notes or "",
+            })
+
         rows.append({
-            "route": f"{deal.availability.origin} → {deal.availability.destination}",
-            "date": deal.availability.departure_date.strftime("%b %d"),
+            "route": f"{a.origin} → {a.destination}",
+            "date": a.departure_date.strftime("%b %d"),
             "airline": airline,
             "aircraft": aircraft,
             "points": points_display,
             "trip_name": deal.trip_name,
-            "score": str(int(deal.score)),
+            "direction": deal.direction,
+            "direction_label": "OUT" if deal.direction == "outbound" else "RET" if deal.direction == "return" else "",
+            "stops": stops,
+            "seats": a.seats_available,
+            "affordable_both": bp.affordable_both,
+            "affordable_one": bp.affordable_one,
+            "freshness_label": deal.freshness_label,
+            "is_new": deal.is_new,
+            "bonus_text": bonus_text,
+            "alt_paths": alt_paths,
+            "layovers": layovers,
         })
+
     return rows
 
 
@@ -269,52 +336,71 @@ def _build_plain_text(
     # Deals
     if deals:
         lines.append(f"TOP {len(deals)} DEALS")
-        lines.append("-" * 30)
-        for i, deal in enumerate(deals, 1):
+        lines.append("-" * 50)
+
+        current_trip = ""
+        for deal in deals:
             a = deal.availability
-            lines.append(f"\n{i}. [{deal.score}] {deal.airline_name} {deal.product_name}")
-            lines.append(f"   {a.origin} → {a.destination} | {a.departure_date.strftime('%b %d, %Y')}")
-
-            if a.num_connections == 0:
-                lines.append("   Nonstop")
-            else:
-                lines.append(f"   {a.num_connections} stop(s), {a.max_layover_hours:.1f}h max layover")
-
             bp = deal.best_path
-            lines.append(
-                f"   Cost: {bp.points_needed_per_person:,} {bp.source_display_name} per person"
-            )
-            if bp.has_active_bonus and bp.bonus:
-                lines.append(
-                    f"   Bonus: +{bp.bonus.bonus_percentage:.0%} active"
-                )
-            lines.append(
-                f"   Total for {config.get('travelers', 2)}: {bp.points_needed_total:,} points"
-            )
-            if bp.affordable_both:
-                lines.append(f"   ✓ You can afford this ({bp.balance_remaining:,} remaining)")
-            elif bp.affordable_one:
-                lines.append("   ⚠ Can book 1 traveler, not both")
 
+            if deal.trip_name != current_trip:
+                current_trip = deal.trip_name
+                lines.append(f"\n  {deal.trip_name.upper()}")
+
+            airline = deal.airline_name or a.source
+            if deal.product_name:
+                airline += f" ({deal.product_name})"
+            lines.append(
+                f"  {a.origin} → {a.destination}  |  {a.departure_date.strftime('%b %d')}  |  "
+                f"{airline}  |  {bp.points_needed_per_person:,} {bp.source_display_name}/pp"
+            )
+
+            # Detail line
+            dir_label = "OUT" if deal.direction == "outbound" else "RET" if deal.direction == "return" else ""
+            parts: list[str] = []
+            if dir_label:
+                parts.append(dir_label)
+            if a.num_connections == 0:
+                parts.append("Nonstop")
+            else:
+                parts.append(f"{a.num_connections} stop")
+                if a.max_layover_hours:
+                    parts.append(f"{a.max_layover_hours:.1f}h layover")
+            if a.total_travel_hours:
+                parts.append(f"{a.total_travel_hours:.1f}h total")
             if a.seats_available:
-                lines.append(f"   Seats: {a.seats_available} available")
+                parts.append(f"{a.seats_available} seats")
+            if bp.affordable_both:
+                parts.append("✓ bookable")
+            elif bp.affordable_one:
+                parts.append("⚠ 1 trav only")
+            else:
+                parts.append("✗ need more pts")
+            parts.append(deal.freshness_label)
+            if bp.has_active_bonus and bp.bonus:
+                parts.append(f"+{int(bp.bonus.bonus_percentage * 100)}%")
+            lines.append(f"    {' · '.join(parts)}")
 
-            if deal.cpp_value:
-                lines.append(f"   Value: {deal.cpp_value:.1f} cpp")
+            if len(deal.all_paths) > 1:
+                alts = []
+                for path in deal.all_paths[1:3]:
+                    alt = f"{path.points_needed_per_person:,} {path.source_display_name}"
+                    if path.affordable_both:
+                        alt += " ✓"
+                    alts.append(alt)
+                lines.append(f"    Also: {' · '.join(alts)}")
 
-            # Layover analysis
             for la in deal.layover_analyses:
-                lines.append(f"\n   LAYOVER: {la.city} ({la.airport}) — {la.duration_hours:.1f}h")
+                lines.append(f"    Layover: {la.city} ({la.airport}) — {la.duration_hours:.1f}h")
                 if la.airport_hotel_usd:
-                    lines.append(f"   Hotel near airport: ~${la.airport_hotel_usd}/night (3★+)")
+                    lines.append(f"      Hotels: ~${la.airport_hotel_usd} near airport")
                 if la.city_center_hotel_usd:
-                    lines.append(f"   Hotel city center: ~${la.city_center_hotel_usd}/night (3★+)")
+                    lines.append(f"      Hotels: ~${la.city_center_hotel_usd} city center")
                 if la.transit_options:
-                    lines.append("   Transit:")
-                    for t in la.transit_options:
-                        lines.append(f"     {t.mode}: ~${t.cost_usd:.0f}, {t.time_min}min — {t.notes}")
+                    transit = [f"{t.mode} ~${t.cost_usd:.0f}/{t.time_min}min" for t in la.transit_options]
+                    lines.append(f"      Transit: {' · '.join(transit)}")
                 if la.notes:
-                    lines.append(f"   Tip: {la.notes}")
+                    lines.append(f"      Tip: {la.notes}")
     else:
         lines.append("No deals found matching your criteria today.")
         if search_stats:

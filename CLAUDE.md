@@ -23,7 +23,10 @@
 Matches the Morning Brief email styling from email-reports:
 - Calibri font, #0066cc blue headers, fluid 600px max-width, inline styles only
 - MSO conditionals for Outlook desktop
-- Sections: Transfer Bonus Alerts → Quick Look summary table → Deal Cards (scored, ranked) → Layover Analysis (for long layovers) → Balances Footer
+- Sections: Transfer Bonus Alerts → Unified deal table (enriched rows with detail line) → Balances Footer
+- Deal table: each deal = main row (route, date, flight, points/pp) + detail row (direction, stops, seats, affordability, freshness, bonus, alt paths, layover info)
+- Score display removed (scoring engine not yet fleshed out)
+- Deal cards removed — all info consolidated into the table
 - Transfer bonus labels are expanded for readability (for example, `Avios` is shown as `Avios (British Airways / Iberia / Aer Lingus)`)
 - Both HTML and plain text versions
 
