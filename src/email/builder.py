@@ -10,6 +10,7 @@ from zoneinfo import ZoneInfo
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
+from src.config import load_transfer_partners
 from src.models import LayoverAnalysis, ScoredDeal, TransferBonus
 
 logger = logging.getLogger(__name__)
@@ -20,6 +21,8 @@ jinja_env = Environment(
     loader=FileSystemLoader(TEMPLATE_DIR),
     autoescape=select_autoescape(["html", "xml"]),
 )
+
+HOTEL_PROGRAMS = frozenset({"hyatt", "marriott", "ihg", "wyndham", "accor", "choice"})
 
 SOURCE_PROGRAM_LABELS = {
     "chase_ur": "Chase Ultimate Rewards",
@@ -71,6 +74,62 @@ jinja_env.filters["format_number"] = lambda n: f"{n:,}"
 jinja_env.filters["program_label"] = _program_label
 
 
+def _build_transfer_partner_table() -> dict:
+    """Build matrix data for the transfer partner reference table in the email."""
+    partners_data = load_transfer_partners()
+    prog_order = ["chase_ur", "capital_one", "united_miles"]
+    prog_labels = {
+        "chase_ur": "Chase UR",
+        "capital_one": "Capital One",
+        "united_miles": "United Miles",
+    }
+
+    all_partners: dict[str, dict] = {}
+    for prog_key in prog_order:
+        prog_data = partners_data.get(prog_key, {})
+        for partner_key, info in prog_data.get("partners", {}).items():
+            if partner_key in HOTEL_PROGRAMS:
+                continue
+            if partner_key not in all_partners:
+                all_partners[partner_key] = {
+                    "name": TARGET_PROGRAM_LABELS.get(
+                        partner_key, partner_key.replace("_", " ").title()
+                    ),
+                    "rates": {},
+                }
+            rate = info.get("rate", 1.0)
+            if prog_key == "united_miles" and partner_key == "united":
+                rate_str = "Direct"
+            elif rate == 1.0:
+                rate_str = "1:1"
+            elif rate == 0.75:
+                rate_str = "4:3 \u2605"
+            else:
+                rate_str = str(rate)
+            all_partners[partner_key]["rates"][prog_key] = rate_str
+
+    def sort_key(item: tuple) -> tuple:
+        _, d = item
+        return (-len(d["rates"]), d["name"])
+
+    rows = []
+    for _, d in sorted(all_partners.items(), key=sort_key):
+        rows.append({
+            "name": d["name"],
+            "cells": [d["rates"].get(p, "") for p in prog_order],
+        })
+
+    has_reduced_rate = any(
+        "\u2605" in cell for row in rows for cell in row["cells"]
+    )
+
+    return {
+        "columns": [prog_labels[p] for p in prog_order],
+        "rows": rows,
+        "has_reduced_rate": has_reduced_rate,
+    }
+
+
 @dataclass
 class EmailContent:
     subject: str
@@ -112,6 +171,7 @@ def build_digest_email(
         "total_routes_searched": total_routes,
         "total_raw_results": total_raw_results,
         "trip_date_blurbs": _build_trip_date_blurbs(config),
+        "transfer_partner_table": _build_transfer_partner_table(),
     }
 
     # Render HTML
@@ -421,6 +481,19 @@ def _build_plain_text(
     lines.extend(["", "YOUR BALANCES", "-" * 30])
     for prog, bal in balances.items():
         lines.append(f"  {prog}: {bal:,}")
+
+    # Transfer partner reference
+    table = _build_transfer_partner_table()
+    lines.extend(["", "TRANSFER PARTNER REFERENCE", "-" * 50])
+    col_header = "  {:<40} {}".format(
+        "Loyalty Program", "  ".join(f"{c:<14}" for c in table["columns"])
+    )
+    lines.append(col_header)
+    for row in table["rows"]:
+        cells = "  ".join(f"{(c or '—'):<14}" for c in row["cells"])
+        lines.append(f"  {row['name']:<40} {cells}")
+    if table["has_reduced_rate"]:
+        lines.append("  ★ 4:3 rate = 1,000 points → 750 miles")
 
     lines.append(f"\n— Points Deal Finder")
     return "\n".join(lines)
