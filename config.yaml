@@ -1,8 +1,8 @@
 # Points Deal Finder — Configuration
 
 balances:
-  chase_ur: 155000
-  capital_one: 94000
+  chase_ur: 0
+  capital_one: 86000
   united_miles: 73000
 
 origins:
