@@ -125,6 +125,9 @@
             {% if trip_date_blurbs.get(row.trip_name) %}
             <br><span style="font-size: 11px; color: #888; font-weight: normal; text-transform: none; letter-spacing: 0;">{{ trip_date_blurbs[row.trip_name] }}</span>
             {% endif %}
+            {% if trip_notes.get(row.trip_name) %}
+            <br><span style="font-size: 11px; color: #666; font-weight: normal; text-transform: none; letter-spacing: 0;">{{ trip_notes[row.trip_name] }}</span>
+            {% endif %}
         </td>
     </tr>
     {% endif %}

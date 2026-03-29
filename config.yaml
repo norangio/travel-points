@@ -21,16 +21,21 @@ travelers: 2  # Nick + Krista — need 2 seats
 
 # Defined trips with outbound + return date windows
 trips:
-  - name: "Portugal/Spain Summer 2026"
+  - name: "Opportunistic Flights"
     destinations:
       - region: europe
-        preferred_airports: [BCN, MAD, LHR, CDG, FRA]
-    # outbound booked: JFK → FRA on 2026-06-09
+        preferred_airports: [LHR, CDG, FRA, AMS, MAD, BCN, LIS, FCO, ZRH]
+      - region: asia
+        preferred_airports: [HND, NRT, ICN, SIN, BKK, HKG]
+    outbound:
+      earliest: "2026-08-15"
+      latest: "2026-12-15"
     return:
-      earliest: "2026-06-15"
-      latest: "2026-06-17"
-    flexibility_days: 0
-    priority: high
+      earliest: "2026-08-22"
+      latest: "2027-02-28"
+    flexibility_days: 7
+    priority: medium
+    email_note: "Monitoring broad aspirational routes with flexible dates now that summer 2026 is booked."
 
   - name: "Asia Winter 2027"
     destinations:
