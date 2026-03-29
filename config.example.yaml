@@ -20,20 +20,8 @@ travelers: 2  # Nick + Krista — need 2 seats
 # Defined trips with separate outbound + return date windows
 # Both directions are searched independently and labeled in the email
 trips:
-  - name: "Europe Fall 2026"
-    destinations:
-      - region: europe
-        preferred_airports: [LHR, CDG, FCO, BCN, LIS, AMS]
-    outbound:
-      earliest: "2026-09-15"
-      latest: "2026-09-30"
-    return:
-      earliest: "2026-10-15"
-      latest: "2026-11-15"
-    flexibility_days: 3
-    priority: high
-
   - name: "Asia Spring 2027"
+    active: true  # optional, defaults to true. Set false to keep trip in config but skip scanning.
     destinations:
       - region: asia
         preferred_airports: [NRT, HND, ICN, SIN, BKK, HKG]
@@ -45,6 +33,7 @@ trips:
       latest: "2027-05-31"
     flexibility_days: 5
     priority: high
+    email_note: "Optional note shown under this trip header in the digest."
 
 # Manual transfer bonuses
 # These are merged with the built-in web scrapers. Keep this section for

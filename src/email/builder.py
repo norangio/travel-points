@@ -171,6 +171,7 @@ def build_digest_email(
         "total_routes_searched": total_routes,
         "total_raw_results": total_raw_results,
         "trip_date_blurbs": _build_trip_date_blurbs(config),
+        "trip_notes": _build_trip_notes(config),
         "transfer_partner_table": _build_transfer_partner_table(),
     }
 
@@ -362,6 +363,17 @@ def _build_trip_date_blurbs(config: dict) -> dict[str, str]:
 
         blurbs[name] = " · ".join(parts)
     return blurbs
+
+
+def _build_trip_notes(config: dict) -> dict[str, str]:
+    """Build optional notes to render under each trip section header."""
+    notes: dict[str, str] = {}
+    for trip in config.get("trips", []):
+        name = trip.get("name", "Unnamed Trip")
+        note = str(trip.get("email_note", "")).strip()
+        if note:
+            notes[name] = note
+    return notes
 
 
 def _build_plain_text(

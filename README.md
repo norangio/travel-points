@@ -7,6 +7,7 @@ Layers intelligence on top of [seats.aero](https://seats.aero) Pro to answer: **
 ## What It Does
 
 - Queries seats.aero for business class award availability across your defined trips
+- Supports pausing booked trips with `active: false` while keeping them in `config.yaml`
 - Calculates the cheapest transfer path from your actual point balances (Chase UR, Capital One, United)
 - Factors in active transfer bonuses from current-bonus pages plus any manual overrides in `config.yaml`
 - Scores deals on cost, airline quality, routing, bonus urgency, and CPP value
@@ -29,6 +30,12 @@ Layers intelligence on top of [seats.aero](https://seats.aero) Pro to answer: **
    - `TRANSFER_BONUS_SCRAPER_TIMEOUT_SECONDS` — timeout for bonus source fetches (default `15.0`)
 3. Install: `pip install .`
 4. Run manually: `python -m src.main`
+
+### Trip configuration tips
+
+- Set `active: false` on any trip that's already booked to remove it from scans and email deal sections.
+- Add a broad "Opportunistic Flights" trip (wider date windows + destinations) to keep hunting for flexible redemptions.
+- Use `email_note` for a short line under a trip header in the digest (for example: "Aspirational opportunistic scan only").
 
 ## GitHub Actions
 

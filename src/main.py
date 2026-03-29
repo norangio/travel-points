@@ -70,7 +70,11 @@ async def run_digest() -> None:
     balances = config.get("balances", {})
     travelers = config.get("travelers", 2)
     origins = config.get("origins", [])
-    trips = config.get("trips", [])
+    all_trips = config.get("trips", [])
+    trips = [trip for trip in all_trips if trip.get("active", True)]
+    skipped_trips = len(all_trips) - len(trips)
+    if skipped_trips:
+        logger.info("Skipping %s inactive trip(s) from config", skipped_trips)
     routing_config = config.get("routing", {})
     email_config = config.get("email", {})
     max_deals = email_config.get("max_deals_per_email", 15)
