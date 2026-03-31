@@ -41,6 +41,13 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+TRIP_PRIORITY_RANK = {
+    "high": 0,
+    "medium": 1,
+    "low": 2,
+}
+
+
 @dataclass
 class RouteCandidate:
     """A raw search hit worth spending a trip-detail lookup on."""
@@ -72,13 +79,14 @@ async def run_digest() -> None:
     origins = config.get("origins", [])
     all_trips = config.get("trips", [])
     trips = [trip for trip in all_trips if trip.get("active", True)]
+    trips_for_scan = _trip_scan_order(trips)
     skipped_trips = len(all_trips) - len(trips)
     if skipped_trips:
         logger.info("Skipping %s inactive trip(s) from config", skipped_trips)
     routing_config = config.get("routing", {})
     email_config = config.get("email", {})
     max_deals = email_config.get("max_deals_per_email", 15)
-    planned_search_calls = _count_planned_search_calls(trips, origins)
+    planned_search_calls = _count_planned_search_calls(trips_for_scan, origins)
 
     if not settings.seats_aero_api_key:
         logger.error("SEATS_AERO_API_KEY not set — cannot fetch availability")
@@ -120,10 +128,11 @@ async def run_digest() -> None:
     search_stats: list[dict] = []  # per-route search summary
 
     try:
-        for trip in trips:
+        for trip in trips_for_scan:
             trip_name = trip.get("name", "Unnamed Trip")
             destinations = trip.get("destinations", [])
             flex = trip.get("flexibility_days", 0)
+            is_opportunistic = _is_opportunistic_trip(trip)
 
             # Collect destination airports
             dest_airports = []
@@ -168,7 +177,12 @@ async def run_digest() -> None:
                             bonuses=bonuses,
                             travelers=travelers,
                         )
-                        trip_candidates = candidates[:max_trip_details_per_search]
+                        detail_cap = _trip_detail_lookup_cap(
+                            is_opportunistic=is_opportunistic,
+                            default_cap=max_trip_details_per_search,
+                            request_cap=max_requests_per_run,
+                        )
+                        trip_candidates = candidates[:detail_cap]
                         skipped_by_cap = max(0, len(candidates) - len(trip_candidates))
 
                         route_deals = 0
@@ -562,6 +576,55 @@ def _count_planned_search_calls(trips: list[dict], origins: list[str]) -> int:
         for leg in legs:
             total += len(leg["from_airports"]) * len(leg["to_airports"])
     return total
+
+
+def _trip_scan_order(trips: list[dict]) -> list[dict]:
+    """
+    Process high-priority trips first so focused trips are scanned before broad
+    opportunistic searches.
+    """
+    return sorted(
+        trips,
+        key=lambda trip: (
+            TRIP_PRIORITY_RANK.get(str(trip.get("priority", "medium")).lower(), 99),
+            _trip_earliest_date(trip) or date.max,
+            trip.get("name", ""),
+        ),
+    )
+
+
+def _trip_earliest_date(trip: dict) -> date | None:
+    """Best-effort earliest outbound date used as a sort tiebreaker."""
+    outbound = trip.get("outbound", {})
+    earliest = _parse_date(outbound.get("earliest")) if outbound else None
+    if earliest:
+        return earliest
+    dr = trip.get("date_range", {})
+    return _parse_date(dr.get("earliest"))
+
+
+def _is_opportunistic_trip(trip: dict) -> bool:
+    """Heuristic: broad exploratory trip definitions are marked as opportunistic."""
+    trip_name = str(trip.get("name", "")).lower()
+    return "opportunistic" in trip_name
+
+
+def _trip_detail_lookup_cap(
+    *,
+    is_opportunistic: bool,
+    default_cap: int,
+    request_cap: int,
+) -> int:
+    """
+    Keep opportunistic scans lighter when run budget is high enough to approach
+    seats.aero daily limits.
+    """
+    if not is_opportunistic:
+        return default_cap
+
+    if request_cap >= 800:
+        return min(default_cap, 2)
+    return min(default_cap, 3)
 
 
 def _build_route_candidates(

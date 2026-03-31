@@ -34,7 +34,7 @@ class Settings(BaseSettings):
     manual_run_recipients: str = Field(default="")
     seats_aero_request_delay_seconds: float = Field(default=1.0)
     seats_aero_max_retries: int = Field(default=4)
-    seats_aero_max_requests_per_run: int = Field(default=900)
+    seats_aero_max_requests_per_run: int = Field(default=800)
     seats_aero_max_trip_details_per_search: int = Field(default=6)
     transfer_bonus_scrapers_enabled: bool = Field(default=True)
     transfer_bonus_scraper_timeout_seconds: float = Field(default=15.0)

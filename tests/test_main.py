@@ -5,6 +5,8 @@ from unittest.mock import patch
 from src.main import (
     _build_route_candidates,
     _count_planned_search_calls,
+    _trip_detail_lookup_cap,
+    _trip_scan_order,
     _parse_recipient_env,
     _resolve_recipients,
 )
@@ -108,4 +110,32 @@ class MainHelpersTest(unittest.TestCase):
         self.assertEqual(
             _parse_recipient_env(" a@example.com, ,b@example.com "),
             ["a@example.com", "b@example.com"],
+        )
+
+    def test_trip_scan_order_prioritizes_high_priority_trip(self) -> None:
+        trips = [
+            {"name": "Opportunistic Flights", "priority": "medium", "outbound": {"earliest": "2026-08-15"}},
+            {"name": "Asia Winter 2027", "priority": "high", "outbound": {"earliest": "2027-01-16"}},
+        ]
+
+        ordered = _trip_scan_order(trips)
+
+        self.assertEqual([trip["name"] for trip in ordered], ["Asia Winter 2027", "Opportunistic Flights"])
+
+    def test_opportunistic_trip_detail_cap_tightens_near_daily_limit(self) -> None:
+        self.assertEqual(
+            _trip_detail_lookup_cap(
+                is_opportunistic=True,
+                default_cap=6,
+                request_cap=800,
+            ),
+            2,
+        )
+        self.assertEqual(
+            _trip_detail_lookup_cap(
+                is_opportunistic=False,
+                default_cap=6,
+                request_cap=800,
+            ),
+            6,
         )
