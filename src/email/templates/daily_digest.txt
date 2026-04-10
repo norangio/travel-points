@@ -1,0 +1,52 @@
+Points Deal Finder — {{ digest_date }}
+==================================================
+
+{% if has_bonuses %}
+TRANSFER BONUS ALERTS
+------------------------------
+{% for bonus in all_bonuses %}
+  {{ bonus.source_program | replace('_', ' ') | title }} → {{ bonus.target_program | replace('_', ' ') | title }}: +{{ (bonus.bonus_percentage * 100) | int }}% bonus{% if bonus.end_date %} (ends {{ bonus.end_date.strftime('%b %d') }}{% if bonus.days_remaining is not none %} — {{ bonus.days_remaining }} days{% endif %}){% endif %}
+
+{% endfor %}
+{% endif %}
+{% if deals %}
+TOP {{ total_deals }} DEAL{{ 'S' if total_deals != 1 else '' }} TONIGHT
+------------------------------
+{% for deal in deals %}
+
+{{ loop.index }}. [{{ deal.score }}] {{ deal.airline_name }} "{{ deal.product_name }}" [{{ deal.freshness_label }}]{% if deal.direction_label %} [{{ deal.direction_label }}]{% endif %}
+   {{ deal.availability.origin }} → {{ deal.availability.destination }} | {{ deal.availability.departure_date.strftime('%b %d, %Y') }}{% if deal.trip_name %} | {{ deal.trip_name }}{% endif %}{% if deal.first_seen and not deal.is_new %} | First seen {{ deal.first_seen.strftime('%b %d') }}{% endif %}
+{% if deal.availability.num_connections == 0 %}   Nonstop{% else %}   {{ deal.availability.num_connections }} stop(s), {{ deal.availability.max_layover_hours }}h max layover{% endif %}{% if deal.availability.total_travel_hours %} · {{ deal.availability.total_travel_hours }}h total{% endif %}{% if deal.availability.seats_available %} · {{ deal.availability.seats_available }} seat(s){% endif %}
+
+   Award: {{ '{:,}'.format(deal.availability.points_cost) }} {{ deal.availability.source }} points/person
+   YOUR COST: {{ '{:,}'.format(deal.best_path.points_needed_per_person) }} {{ deal.best_path.source_display_name }}/person
+{% if deal.best_path.has_active_bonus and deal.best_path.bonus %}   Bonus: +{{ (deal.best_path.bonus.bonus_percentage * 100) | int }}% active{% if deal.best_path.bonus.days_remaining is not none %} ({{ deal.best_path.bonus.days_remaining }} days left){% endif %}
+{% endif %}   Total for {{ travelers }}: {{ '{:,}'.format(deal.best_path.points_needed_total) }} points
+{% if deal.best_path.affordable_both %}   ✓ You can book this ({{ '{:,}'.format(deal.best_path.balance_remaining) }} remaining)
+{% elif deal.best_path.affordable_one %}   ⚠ Can book 1, not both
+{% endif %}{% if deal.cpp_value %}   Value: {{ deal.cpp_value }} cpp{% if deal.cash_price_usd %} (cash ~${{ '{:,.0f}'.format(deal.cash_price_usd) }}){% endif %}
+{% endif %}
+{% for la in deal.layover_analyses %}
+   LAYOVER: {{ la.city }} ({{ la.airport }}) — {{ la.duration_hours | round(1) }}h
+{% if la.airport_hotel_usd %}   Hotel near airport: ~${{ la.airport_hotel_usd }}/night (3★+)
+{% endif %}{% if la.city_center_hotel_usd %}   Hotel city center: ~${{ la.city_center_hotel_usd }}/night (3★+)
+{% endif %}{% if la.transit_options %}   Transit:
+{% for t in la.transit_options %}     {{ t.mode }}: ~${{ t.cost_usd | int }}, {{ t.time_min }}min — {{ t.notes }}
+{% endfor %}{% endif %}{% if la.notes %}   Tip: {{ la.notes }}
+{% endif %}{% endfor %}
+{% endfor %}
+{% else %}
+No business class deals matched your criteria today. We'll keep scanning!
+
+{% if search_stats %}
+WHAT WE SEARCHED — {{ total_routes_searched }} routes, {{ total_raw_results }} raw results
+------------------------------
+{% for stat in search_stats %}  {{ stat.route }} ({{ stat.direction }}) · {{ stat.trip_name }}: {{ stat.raw_results }} results
+{% endfor %}{% endif %}{% endif %}
+
+YOUR BALANCES
+------------------------------
+{% for program, balance in balances.items() %}  {{ program | replace('_', ' ') | title }}: {{ '{:,}'.format(balance) }}
+{% endfor %}
+
+— Points Deal Finder

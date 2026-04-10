@@ -1,0 +1,173 @@
+# Transfer partner map: credit card programs → airline/hotel loyalty programs
+# rate: base transfer ratio (1.0 = 1:1)
+# instant: whether transfer is instant or takes 1-2 days
+# seats_aero_source: the source name used in seats.aero API queries
+#
+# Sources:
+#   Chase: https://www.chase.com/personal/credit-cards/education/basics/how-to-transfer-chase-ultimate-rewards-points
+#   Capital One: https://www.capitalone.com/learn-grow/money-management/venture-miles-transfer-partnerships/
+
+chase_ur:
+  display_name: "Chase Ultimate Rewards"
+  partners:
+    united:
+      rate: 1.0
+      instant: true
+      seats_aero_source: "united"
+    aeroplan:
+      rate: 1.0
+      instant: true
+      seats_aero_source: "aeroplan"
+      notes: "Air Canada"
+    avios:
+      rate: 1.0
+      instant: true
+      seats_aero_source: "avios"
+      notes: "Books BA, Aer Lingus, Iberia via Avios"
+    flying_blue:
+      rate: 1.0
+      instant: true
+      seats_aero_source: "flyingblue"
+      notes: "Air France/KLM"
+    singapore:
+      rate: 1.0
+      instant: true
+      seats_aero_source: "singapore"
+    virgin_atlantic:
+      rate: 1.0
+      instant: true
+      seats_aero_source: "virginatlantic"
+    jetblue:
+      rate: 1.0
+      instant: true
+      seats_aero_source: null
+    southwest:
+      rate: 1.0
+      instant: true
+      seats_aero_source: null
+    hyatt:
+      rate: 1.0
+      instant: true
+      seats_aero_source: null
+      notes: "Hotel program"
+    marriott:
+      rate: 1.0
+      instant: false
+      seats_aero_source: null
+      notes: "Hotel program"
+    ihg:
+      rate: 1.0
+      instant: true
+      seats_aero_source: null
+      notes: "Hotel program"
+
+capital_one:
+  display_name: "Capital One Miles"
+  partners:
+    aeroplan:
+      rate: 1.0
+      instant: true
+      seats_aero_source: "aeroplan"
+      notes: "Air Canada"
+    flying_blue:
+      rate: 1.0
+      instant: true
+      seats_aero_source: "flyingblue"
+      notes: "Air France/KLM"
+    avios:
+      rate: 1.0
+      instant: true
+      seats_aero_source: "avios"
+      notes: "Books BA, Aer Lingus, Iberia via Avios"
+    turkish:
+      rate: 1.0
+      instant: true
+      seats_aero_source: "turkishmiles"
+    singapore:
+      rate: 1.0
+      instant: true
+      seats_aero_source: "singapore"
+    avianca:
+      rate: 1.0
+      instant: true
+      seats_aero_source: "avianca"
+      notes: "LifeMiles"
+    cathay:
+      rate: 1.0
+      instant: true
+      seats_aero_source: "cathay"
+      notes: "Asia Miles"
+    qatar:
+      rate: 1.0
+      instant: true
+      seats_aero_source: "qatar"
+      notes: "Privilege Club"
+    emirates:
+      rate: 0.75
+      instant: true
+      seats_aero_source: "emirates"
+      notes: "4:3 ratio (1000 C1 = 750 Skywards)"
+    etihad:
+      rate: 1.0
+      instant: true
+      seats_aero_source: "etihad"
+    finnair:
+      rate: 1.0
+      instant: true
+      seats_aero_source: "finnair"
+    qantas:
+      rate: 1.0
+      instant: true
+      seats_aero_source: "qantas"
+    virgin_atlantic:
+      rate: 1.0
+      instant: true
+      seats_aero_source: "virginatlantic"
+    aeromexico:
+      rate: 1.0
+      instant: true
+      seats_aero_source: null
+    eva_air:
+      rate: 0.75
+      instant: true
+      seats_aero_source: null
+      notes: "4:3 ratio (1000 C1 = 750 EVA miles)"
+    jal:
+      rate: 0.75
+      instant: true
+      seats_aero_source: null
+      notes: "4:3 ratio (1000 C1 = 750 JAL miles)"
+    jetblue:
+      rate: 1.0
+      instant: true
+      seats_aero_source: null
+    tap:
+      rate: 1.0
+      instant: true
+      seats_aero_source: null
+      notes: "Miles&Go"
+    wyndham:
+      rate: 1.0
+      instant: true
+      seats_aero_source: null
+      notes: "Hotel program"
+    accor:
+      rate: 0.5
+      instant: true
+      seats_aero_source: null
+      notes: "Hotel program, 2:1 ratio"
+    choice:
+      rate: 1.0
+      instant: true
+      seats_aero_source: null
+      notes: "Hotel program"
+
+united_miles:
+  display_name: "United MileagePlus"
+  partners:
+    united:
+      rate: 1.0
+      instant: true
+      direct: true
+      seats_aero_source: "united"
+      notes: "Direct redemption, also books Star Alliance partners"

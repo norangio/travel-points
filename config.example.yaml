@@ -1,0 +1,67 @@
+# Points Deal Finder — Configuration
+# Copy this to config.yaml and fill in your own details.
+# config.yaml is gitignored — your personal config stays local.
+
+balances:
+  chase_ur: 185000
+  capital_one: 120000
+  united_miles: 45000
+
+origins:
+  - SAN
+  - LAX
+  - SFO
+  - SNA
+
+cabin: business  # only business class
+
+travelers: 2  # number of seats needed
+
+# Defined trips with separate outbound + return date windows
+# Both directions are searched independently and labeled in the email
+trips:
+  - name: "Asia Spring 2027"
+    active: true  # optional, defaults to true. Set false to keep trip in config but skip scanning.
+    destinations:
+      - region: asia
+        preferred_airports: [NRT, HND, ICN, SIN, BKK, HKG]
+    outbound:
+      earliest: "2027-03-01"
+      latest: "2027-03-15"
+    return:
+      earliest: "2027-04-01"
+      latest: "2027-05-31"
+    flexibility_days: 5
+    priority: high
+    email_note: "Optional note shown under this trip header in the digest."
+
+# Manual transfer bonuses
+# These are merged with the built-in web scrapers. Keep this section for
+# one-off bonuses, corrections, or anything the scrapers miss.
+transfer_bonuses:
+  # Example:
+  # - source_program: chase_ur
+  #   target_program: avios
+  #   bonus_percentage: 0.20
+  #   start_date: "2026-03-01"
+  #   end_date: "2026-03-31"
+  #   source_url: "https://frequentmiler.com/..."
+  #   notes: "20% Chase → Avios through March 2026"
+
+# Route quality filters
+routing:
+  max_connections: 1
+  max_total_layover_hours: 6
+  max_total_travel_hours: 24  # bump to 28 for Asia routes
+
+# Value floor — don't burn points if cash is cheap
+value_floor:
+  min_cpp: 1.5
+
+# Email settings
+email:
+  recipients:
+    - nick@example.com
+    - krista@example.com
+  max_deals_per_email: 15
+  include_transfer_bonus_summary: true

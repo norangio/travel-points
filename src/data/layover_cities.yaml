@@ -1,0 +1,398 @@
+# Layover city data for long-layover analysis
+# hotel_3star_usd: typical nightly rate for a 3-star+ hotel
+# airport_hotel_usd: rate for hotels within 10 min of airport
+# city_center_hotel_usd: rate for 3-star+ hotels in city center
+# transit: available transit options from airport
+# Updated: March 2026
+
+airports:
+  DOH:
+    city: Doha
+    country: Qatar
+    airport_name: Hamad International
+    airport_hotel_usd: 85
+    city_center_hotel_usd: 70
+    transit:
+      - mode: Metro
+        cost_usd: 1
+        time_min: 20
+        notes: "Red Line direct to city center (Msheireb)"
+      - mode: Taxi
+        cost_usd: 15
+        time_min: 20
+        notes: "Uber/Careem available"
+    notes: "Qatar offers free transit hotel for layovers 8-24h via Discover Qatar program"
+
+  IST:
+    city: Istanbul
+    country: Turkey
+    airport_name: Istanbul Airport
+    airport_hotel_usd: 60
+    city_center_hotel_usd: 50
+    transit:
+      - mode: Metro
+        cost_usd: 2
+        time_min: 50
+        notes: "M11 Kagithane line + transfer to city center"
+      - mode: Havaist Bus
+        cost_usd: 5
+        time_min: 60
+        notes: "Direct bus to Taksim, Sultanahmet, Kadikoy"
+      - mode: Taxi
+        cost_usd: 35
+        time_min: 40
+        notes: "Can be expensive, use BiTaksi app"
+    notes: "Turkish Airlines offers free Istanbul layover hotel for connections 8-24h (TourIstanbul program)"
+
+  SIN:
+    city: Singapore
+    country: Singapore
+    airport_name: Changi Airport
+    airport_hotel_usd: 100
+    city_center_hotel_usd: 120
+    transit:
+      - mode: MRT
+        cost_usd: 2
+        time_min: 30
+        notes: "East-West Line direct to city center"
+      - mode: Taxi
+        cost_usd: 20
+        time_min: 25
+        notes: "Grab available, metered taxis reliable"
+    notes: "Changi has free movie theaters, butterfly garden, pool. Transit hotel (Aerotel) in T1."
+
+  HKG:
+    city: Hong Kong
+    country: Hong Kong
+    airport_name: Hong Kong International
+    airport_hotel_usd: 90
+    city_center_hotel_usd: 100
+    transit:
+      - mode: Airport Express
+        cost_usd: 14
+        time_min: 24
+        notes: "Direct to Central station"
+      - mode: Bus
+        cost_usd: 5
+        time_min: 50
+        notes: "Multiple routes to different districts"
+      - mode: Taxi
+        cost_usd: 45
+        time_min: 35
+        notes: "Red taxis to urban areas"
+    notes: "Excellent airport facilities. Easy to do a quick city visit on long layover."
+
+  NRT:
+    city: Tokyo
+    country: Japan
+    airport_name: Narita International
+    airport_hotel_usd: 70
+    city_center_hotel_usd: 90
+    transit:
+      - mode: Narita Express
+        cost_usd: 25
+        time_min: 60
+        notes: "Direct to Tokyo/Shinjuku/Shibuya stations"
+      - mode: Skyliner
+        cost_usd: 20
+        time_min: 40
+        notes: "Keisei line to Ueno/Nippori"
+      - mode: Bus
+        cost_usd: 10
+        time_min: 75
+        notes: "Airport limousine bus to major hotels"
+    notes: "Narita is far from central Tokyo. 8h+ layover needed for a city visit."
+
+  HND:
+    city: Tokyo
+    country: Japan
+    airport_name: Haneda Airport
+    airport_hotel_usd: 80
+    city_center_hotel_usd: 90
+    transit:
+      - mode: Monorail
+        cost_usd: 4
+        time_min: 15
+        notes: "To Hamamatsucho, connect to JR lines"
+      - mode: Keikyu Line
+        cost_usd: 3
+        time_min: 15
+        notes: "Direct to Shinagawa/Shimbashi"
+      - mode: Taxi
+        cost_usd: 30
+        time_min: 20
+        notes: "Much closer to city than Narita"
+    notes: "Close to city center. Good option for a quick Tokyo visit on layover."
+
+  ICN:
+    city: Seoul
+    country: South Korea
+    airport_name: Incheon International
+    airport_hotel_usd: 65
+    city_center_hotel_usd: 70
+    transit:
+      - mode: AREX Express
+        cost_usd: 8
+        time_min: 43
+        notes: "Direct to Seoul Station"
+      - mode: AREX All Stop
+        cost_usd: 4
+        time_min: 58
+        notes: "Stops at Hongdae, Digital Media City"
+      - mode: Airport Bus
+        cost_usd: 10
+        time_min: 70
+        notes: "Various routes to Gangnam, Myeongdong, etc."
+    notes: "Excellent transit hotel and free Korean culture experiences in airport."
+
+  FRA:
+    city: Frankfurt
+    country: Germany
+    airport_name: Frankfurt Airport
+    airport_hotel_usd: 90
+    city_center_hotel_usd: 85
+    transit:
+      - mode: S-Bahn
+        cost_usd: 5
+        time_min: 15
+        notes: "S8/S9 direct to Frankfurt Hauptbahnhof"
+      - mode: Taxi
+        cost_usd: 35
+        time_min: 15
+        notes: "Short distance to city"
+    notes: "Airport is very close to city center. Easy layover exploration."
+
+  LHR:
+    city: London
+    country: United Kingdom
+    airport_name: Heathrow Airport
+    airport_hotel_usd: 110
+    city_center_hotel_usd: 140
+    transit:
+      - mode: Elizabeth Line
+        cost_usd: 12
+        time_min: 35
+        notes: "Direct to Paddington/Liverpool Street"
+      - mode: Piccadilly Line
+        cost_usd: 6
+        time_min: 50
+        notes: "Underground direct to central London"
+      - mode: Heathrow Express
+        cost_usd: 28
+        time_min: 15
+        notes: "Express train to Paddington"
+    notes: "Multiple transit hotels at Heathrow. London is expensive but well-connected."
+
+  CDG:
+    city: Paris
+    country: France
+    airport_name: Charles de Gaulle
+    airport_hotel_usd: 85
+    city_center_hotel_usd: 100
+    transit:
+      - mode: RER B
+        cost_usd: 12
+        time_min: 35
+        notes: "Direct to Gare du Nord/Chatelet"
+      - mode: Roissybus
+        cost_usd: 14
+        time_min: 60
+        notes: "Direct to Opera"
+      - mode: Taxi
+        cost_usd: 55
+        time_min: 40
+        notes: "Flat rate to Paris center"
+    notes: "Several transit hotels near CDG. RER B is the best option for a quick city visit."
+
+  AMS:
+    city: Amsterdam
+    country: Netherlands
+    airport_name: Schiphol Airport
+    airport_hotel_usd: 100
+    city_center_hotel_usd: 110
+    transit:
+      - mode: Train
+        cost_usd: 5
+        time_min: 15
+        notes: "Direct to Amsterdam Centraal"
+      - mode: Taxi
+        cost_usd: 40
+        time_min: 20
+    notes: "Schiphol has a train station inside the airport. Very easy to visit Amsterdam."
+
+  DXB:
+    city: Dubai
+    country: UAE
+    airport_name: Dubai International
+    airport_hotel_usd: 75
+    city_center_hotel_usd: 80
+    transit:
+      - mode: Metro
+        cost_usd: 2
+        time_min: 30
+        notes: "Red Line to downtown/Dubai Mall"
+      - mode: Taxi
+        cost_usd: 15
+        time_min: 20
+        notes: "Uber/Careem available, taxis metered"
+    notes: "Dubai Mall and Burj Khalifa easily accessible. Emirates sometimes offers transit hotels."
+
+  BKK:
+    city: Bangkok
+    country: Thailand
+    airport_name: Suvarnabhumi Airport
+    airport_hotel_usd: 45
+    city_center_hotel_usd: 40
+    transit:
+      - mode: Airport Rail Link
+        cost_usd: 2
+        time_min: 30
+        notes: "To Phaya Thai, connect to BTS Skytrain"
+      - mode: Taxi
+        cost_usd: 10
+        time_min: 30
+        notes: "Metered taxi + expressway toll. Grab also available."
+    notes: "Very affordable. Easy to enjoy a long layover with great food and temples."
+
+  TPE:
+    city: Taipei
+    country: Taiwan
+    airport_name: Taoyuan International
+    airport_hotel_usd: 55
+    city_center_hotel_usd: 60
+    transit:
+      - mode: MRT Express
+        cost_usd: 5
+        time_min: 35
+        notes: "Direct to Taipei Main Station"
+      - mode: Bus
+        cost_usd: 4
+        time_min: 50
+        notes: "Multiple routes to Taipei"
+    notes: "Great food scene accessible on a long layover."
+
+  MUC:
+    city: Munich
+    country: Germany
+    airport_name: Munich Airport
+    airport_hotel_usd: 90
+    city_center_hotel_usd: 95
+    transit:
+      - mode: S-Bahn
+        cost_usd: 12
+        time_min: 40
+        notes: "S1/S8 to Marienplatz"
+      - mode: Lufthansa Express Bus
+        cost_usd: 12
+        time_min: 45
+        notes: "Direct to Munich Hauptbahnhof"
+    notes: "Airport has its own brewery (Airbräu). Good Lufthansa lounge."
+
+  ZRH:
+    city: Zurich
+    country: Switzerland
+    airport_name: Zurich Airport
+    airport_hotel_usd: 130
+    city_center_hotel_usd: 150
+    transit:
+      - mode: Train
+        cost_usd: 7
+        time_min: 10
+        notes: "Direct to Zurich HB (main station)"
+      - mode: Tram
+        cost_usd: 4
+        time_min: 25
+    notes: "Very close to city center. Switzerland is expensive."
+
+  ADD:
+    city: Addis Ababa
+    country: Ethiopia
+    airport_name: Bole International
+    airport_hotel_usd: 40
+    city_center_hotel_usd: 35
+    transit:
+      - mode: Light Rail
+        cost_usd: 1
+        time_min: 30
+        notes: "Bole station to Meskel Square"
+      - mode: Taxi
+        cost_usd: 8
+        time_min: 20
+        notes: "Negotiate fare in advance or use Ride app"
+    notes: "Ethiopian Airlines offers free transit hotel for layovers 8-24h."
+
+  DEL:
+    city: New Delhi
+    country: India
+    airport_name: Indira Gandhi International
+    airport_hotel_usd: 50
+    city_center_hotel_usd: 45
+    transit:
+      - mode: Airport Express Metro
+        cost_usd: 3
+        time_min: 20
+        notes: "Direct to New Delhi Railway Station"
+      - mode: Taxi
+        cost_usd: 10
+        time_min: 30
+        notes: "Pre-paid taxi from airport or Uber"
+    notes: "Air quality can be poor. Transit hotel available in T3."
+
+  LIS:
+    city: Lisbon
+    country: Portugal
+    airport_name: Lisbon Airport
+    airport_hotel_usd: 65
+    city_center_hotel_usd: 70
+    transit:
+      - mode: Metro
+        cost_usd: 2
+        time_min: 20
+        notes: "Red Line direct to city center"
+      - mode: Taxi
+        cost_usd: 15
+        time_min: 15
+        notes: "Airport is very close to city"
+    notes: "One of the closest European airports to city center. Great for layover exploration."
+
+  BCN:
+    city: Barcelona
+    country: Spain
+    airport_name: Barcelona-El Prat
+    airport_hotel_usd: 75
+    city_center_hotel_usd: 80
+    transit:
+      - mode: Aerobus
+        cost_usd: 7
+        time_min: 35
+        notes: "Direct to Placa Catalunya"
+      - mode: Metro L9
+        cost_usd: 5
+        time_min: 40
+        notes: "To Zona Universitaria, connect to other lines"
+      - mode: RENFE Train
+        cost_usd: 5
+        time_min: 25
+        notes: "T2 only, to Passeig de Gracia/Sants"
+    notes: "Good transit connections. Worthwhile city visit on 6h+ layover."
+
+  FCO:
+    city: Rome
+    country: Italy
+    airport_name: Fiumicino Airport
+    airport_hotel_usd: 75
+    city_center_hotel_usd: 85
+    transit:
+      - mode: Leonardo Express
+        cost_usd: 15
+        time_min: 32
+        notes: "Non-stop to Roma Termini"
+      - mode: FL1 Regional Train
+        cost_usd: 8
+        time_min: 45
+        notes: "Stops at Trastevere, Ostiense, Tiburtina"
+      - mode: Taxi
+        cost_usd: 50
+        time_min: 40
+        notes: "Fixed rate to city center"
+    notes: "Leonardo Express is fast and reliable."

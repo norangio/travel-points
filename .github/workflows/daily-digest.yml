@@ -1,0 +1,59 @@
+name: Evening Points Digest
+
+on:
+  schedule:
+    # 00:00 UTC = 4:00 PM PST (5:00 PM PDT).
+    - cron: "0 0 * * *"
+  workflow_dispatch: # manual trigger for testing
+
+jobs:
+  send-digest:
+    runs-on: ubuntu-latest
+
+    env:
+      SEATS_AERO_API_KEY: ${{ secrets.SEATS_AERO_API_KEY }}
+      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+      EMAIL_FROM_ADDRESS: ${{ vars.EMAIL_FROM_ADDRESS || 'onboarding@resend.dev' }}
+      EMAIL_FROM_NAME: ${{ vars.EMAIL_FROM_NAME || 'Points Deal Finder' }}
+      SEATS_AERO_REQUEST_DELAY_SECONDS: ${{ vars.SEATS_AERO_REQUEST_DELAY_SECONDS || '1.0' }}
+      SEATS_AERO_MAX_RETRIES: ${{ vars.SEATS_AERO_MAX_RETRIES || '4' }}
+      SEATS_AERO_MAX_REQUESTS_PER_RUN: ${{ vars.SEATS_AERO_MAX_REQUESTS_PER_RUN || '800' }}
+      SEATS_AERO_MAX_TRIP_DETAILS_PER_SEARCH: ${{ vars.SEATS_AERO_MAX_TRIP_DETAILS_PER_SEARCH || '6' }}
+      TRANSFER_BONUS_SCRAPERS_ENABLED: ${{ vars.TRANSFER_BONUS_SCRAPERS_ENABLED || 'true' }}
+      TRANSFER_BONUS_SCRAPER_TIMEOUT_SECONDS: ${{ vars.TRANSFER_BONUS_SCRAPER_TIMEOUT_SECONDS || '15.0' }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Restore previous state
+        uses: actions/cache/restore@v4
+        with:
+          path: state/last_run.json
+          key: deal-state-
+          restore-keys: |
+            deal-state-
+
+      - name: Write config
+        run: echo "$CONFIG_YAML" > config.yaml
+        env:
+          CONFIG_YAML: ${{ secrets.CONFIG_YAML }}
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install .
+
+      - name: Run digest
+        run: python -m src.main
+
+      - name: Save state for next run
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: state/last_run.json
+          key: deal-state-${{ github.run_number }}
