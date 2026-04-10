@@ -43,6 +43,17 @@ jobs:
         env:
           CONFIG_YAML: ${{ secrets.CONFIG_YAML }}
 
+      - name: Debug config indent
+        run: |
+          echo "=== first 12 lines, indent only ==="
+          head -12 config.yaml | awk '{
+            indent = match($0, /[^ ]/) - 1
+            if (indent < 0) indent = 0
+            print NR": indent="indent
+          }'
+          echo "=== first 8 bytes as hex ==="
+          head -c 8 config.yaml | od -c | head -1
+
       - name: Install dependencies
         run: |
           pip install --upgrade pip
