@@ -39,7 +39,13 @@ jobs:
             deal-state-
 
       - name: Write config
-        run: printenv CONFIG_YAML_B64 | base64 -d > config.yaml
+        run: |
+          if [ -z "$CONFIG_YAML_B64" ]; then
+            echo "ERROR: CONFIG_YAML_B64 secret is empty or not set"
+            exit 1
+          fi
+          printenv CONFIG_YAML_B64 | base64 -d > config.yaml
+          echo "config.yaml size: $(wc -c < config.yaml) bytes, $(wc -l < config.yaml) lines"
         env:
           CONFIG_YAML_B64: ${{ secrets.CONFIG_YAML_B64 }}
 
