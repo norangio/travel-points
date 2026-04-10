@@ -39,7 +39,7 @@ jobs:
             deal-state-
 
       - name: Write config
-        run: echo "$CONFIG_YAML" > config.yaml
+        run: printenv CONFIG_YAML > config.yaml
         env:
           CONFIG_YAML: ${{ secrets.CONFIG_YAML }}
 
