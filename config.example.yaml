@@ -61,7 +61,7 @@ value_floor:
 # Email settings
 email:
   recipients:
-    - nick@example.com
-    - krista@example.com
+    - traveler1@example.com
+    - traveler2@example.com
   max_deals_per_email: 15
   include_transfer_bonus_summary: true

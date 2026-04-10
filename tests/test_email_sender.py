@@ -14,7 +14,7 @@ class EmailSenderTest(unittest.TestCase):
         with patch.object(EmailSender, "send", return_value="email-1"):
             with self.assertLogs("src.email.sender", level="WARNING") as logs:
                 ids = sender.send_to_all(
-                    recipients=["nick@example.com"],
+                    recipients=["traveler@example.com"],
                     subject="Subject",
                     html_body="<p>Hi</p>",
                     text_body="Hi",

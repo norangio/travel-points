@@ -107,7 +107,7 @@ This tool layers intelligence on top of seats.aero's availability data to answer
 | The Points Guy | `thepointsguy.com/loyalty-programs/current-transfer-bonuses/` | Scrape + RSS | High-traffic, fast updates |
 | AwardWallet | `awardwallet.com/news/credit-card-transfer-bonuses/` | Scrape | Clean tabular format, easy to parse |
 | Upgraded Points | `upgradedpoints.com/news/current-credit-card-transfer-bonuses/` | Scrape | Good structured data |
-| One Mile at a Time (OMAAT) | RSS feed | RSS | Nick Ewen covers bonuses quickly |
+| One Mile at a Time (OMAAT) | RSS feed | RSS | OMAAT covers bonuses quickly |
 
 **Data Model — Transfer Bonus:**
 ```python
@@ -226,8 +226,8 @@ value_floor:
 # Email
 email:
   recipients:
-    - nick@example.com
-    - krista@example.com
+    - traveler1@example.com
+    - traveler2@example.com
   daily_digest_time: "07:00"  # PT
   max_deals_per_email: 15
   include_transfer_bonus_summary: true
