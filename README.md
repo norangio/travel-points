@@ -1,105 +1,211 @@
 # Points Deal Finder
 
-Automated business class award flight deal finder & daily email digest.
+Automated award-flight deal finder and daily email digest for travelers who want better signal than raw seats.aero alerts.
 
-Layers intelligence on top of [seats.aero](https://seats.aero) Pro to answer: **"What's the best business class deal I can actually book right now with the points I have?"**
+This project layers your real point balances, trip windows, transfer bonuses, routing preferences, and layover tolerance on top of [seats.aero](https://seats.aero) availability so the output is not just "award space exists," but "these are the best business-class options you can realistically book right now."
+
+## Why This Exists
+
+seats.aero is excellent at surfacing raw award availability, but it does not know:
+
+- which trips you actually care about
+- which transferable currencies you hold
+- which transfer bonuses are active
+- which routes are too painful to bother with
+- which deals are worth emailing versus ignoring
+
+Points Deal Finder adds that layer of personalization and sends a compact digest instead of a firehose.
 
 ## What It Does
 
-- Queries seats.aero for business class award availability across your defined trips
-- Supports pausing booked trips with `active: false` while keeping them in `config.yaml`
-- Calculates the cheapest transfer path from your actual point balances (Chase UR, Capital One, United)
-- Factors in active transfer bonuses from current-bonus pages plus any manual overrides in `config.yaml`
-- Scores deals on cost, airline quality, routing, bonus urgency, and CPP value
-- Analyzes long layovers with hotel costs and transit options
-- Sends a styled HTML email digest every evening via Resend
-- Includes a unified deal summary table with trip-grouped rows, inline layover details, and best-effort `View in seats.aero` links
+- Queries seats.aero for business-class award availability across your configured trips
+- Searches outbound and return windows independently for round-trip planning
+- Calculates the cheapest transfer path from your actual balances
+- Incorporates active transfer bonuses from current-bonus pages plus manual overrides
+- Scores deals on cost, routing quality, airline quality, urgency, and value floor
+- Flags long layovers with hotel-cost and transit context
+- Groups results into a styled HTML email digest delivered through Resend
+- Supports `active: false` so booked trips stay in config without cluttering the digest
 
-## Setup
+## How It Works
 
-1. Copy `config.example.yaml` to `config.yaml` and fill in your balances, trips, and preferences
-2. Set environment variables (or create `.env`):
-   - `SEATS_AERO_API_KEY` — seats.aero Pro API key
-   - `RESEND_API_KEY` — Resend email API key
-   - `EMAIL_FROM_ADDRESS` — verified Resend sender address (defaults to `onboarding@resend.dev`)
-   - `EMAIL_FROM_NAME` — sender display name
-   - `SEATS_AERO_REQUEST_DELAY_SECONDS` — minimum spacing between API calls (default `1.0`)
-   - `SEATS_AERO_MAX_REQUESTS_PER_RUN` — hard cap for seats.aero HTTP requests per digest (default `900`)
-   - `SEATS_AERO_MAX_TRIP_DETAILS_PER_SEARCH` — max `/trips/{id}` lookups per route search (default `6`)
-   - `TRANSFER_BONUS_SCRAPERS_ENABLED` — fetch current bonuses from Frequent Miler / TPG / AwardWallet (default `true`)
-   - `TRANSFER_BONUS_SCRAPER_TIMEOUT_SECONDS` — timeout for bonus source fetches (default `15.0`)
-3. Install: `pip install .`
-4. Run manually: `python -m src.main`
+1. Load your trip definitions, balances, and routing preferences from `config.yaml`.
+2. Query seats.aero cached availability for matching routes and dates.
+3. Pull trip details for the best candidates, within a request budget.
+4. Merge live transfer bonuses with any manual bonus overrides.
+5. Score and rank the deals using routing, transfer cost, airline quality, and value filters.
+6. Add layover analysis for long stops.
+7. Render and send the daily digest email.
 
-### Trip configuration tips
+## Requirements
 
-- Set `active: false` on any trip that's already booked to remove it from scans and email deal sections.
-- Add a broad "Opportunistic Flights" trip (wider date windows + destinations) to keep hunting for flexible redemptions.
-- Use `priority: high` for must-book trips so they render ahead of opportunistic scans in the digest.
-- Use `email_note` for a short line under a trip header in the digest (for example: "Aspirational opportunistic scan only").
+- Python 3.11+
+- A seats.aero Pro account with API access
+- A Resend account if you want live email delivery
 
-## GitHub Actions
+You can still use the local preview flow without sending email.
 
-The digest runs on a single GitHub Actions cron at `01:00 UTC`, which is `6:00 PM PDT`
-and `5:00 PM PST`. Required secrets:
+## Quick Start
+
+```bash
+git clone https://github.com/norangio/travel-points.git
+cd travel-points
+python -m venv .venv
+source .venv/bin/activate
+pip install .
+cp config.example.yaml config.yaml
+```
+
+Set the required environment variables:
+
 - `SEATS_AERO_API_KEY`
 - `RESEND_API_KEY`
 
+Optional environment variables:
+
+- `EMAIL_FROM_ADDRESS` — verified Resend sender address; defaults to `onboarding@resend.dev`
+- `EMAIL_FROM_NAME` — sender display name
+- `SEATS_AERO_REQUEST_DELAY_SECONDS` — minimum spacing between seats.aero requests; default `1.0`
+- `SEATS_AERO_MAX_RETRIES` — retry cap for seats.aero requests; default `4`
+- `SEATS_AERO_MAX_REQUESTS_PER_RUN` — hard cap for HTTP requests per run; default `800`
+- `SEATS_AERO_MAX_TRIP_DETAILS_PER_SEARCH` — max `/trips/{id}` lookups per route search; default `6`
+- `TRANSFER_BONUS_SCRAPERS_ENABLED` — enable bonus scraping; default `true`
+- `TRANSFER_BONUS_SCRAPER_TIMEOUT_SECONDS` — scraper timeout in seconds; default `15.0`
+- `MANUAL_RUN_RECIPIENTS` — override recipients for manual workflow runs
+- `EMAIL_RECIPIENTS_OVERRIDE` — override recipients for any run
+
+Run the pipeline locally:
+
+```bash
+python -m src.main
+```
+
+## Example Config
+
+`config.example.yaml` is the starting point. A minimal trip looks like this:
+
+```yaml
+balances:
+  chase_ur: 185000
+  capital_one: 120000
+
+origins: [SAN, LAX, SFO, SNA]
+cabin: business
+travelers: 2
+
+trips:
+  - name: "Asia Spring 2027"
+    active: true
+    destinations:
+      - region: asia
+        preferred_airports: [NRT, HND, ICN, SIN, BKK, HKG]
+    outbound:
+      earliest: "2027-03-01"
+      latest: "2027-03-15"
+    return:
+      earliest: "2027-04-01"
+      latest: "2027-05-31"
+    flexibility_days: 5
+    priority: high
+```
+
+Configuration tips:
+
+- Set `active: false` on trips you already booked but want to keep around.
+- Use `priority: high` for must-book trips so they render above opportunistic searches.
+- Add an `email_note` for short context under a trip heading in the digest.
+- Keep manual `transfer_bonuses` entries for edge cases or scraper misses.
+
+## GitHub Actions
+
+The repo includes a scheduled GitHub Actions workflow for automatic daily runs.
+
+- Workflow: [`.github/workflows/daily-digest.yml`](./.github/workflows/daily-digest.yml)
+- Schedule: `00:00 UTC` daily
+- Manual trigger: `workflow_dispatch`
+
+Required GitHub secrets:
+
+- `SEATS_AERO_API_KEY`
+- `RESEND_API_KEY`
+- `CONFIG_YAML_B64` — base64-encoded contents of your private `config.yaml`
+
 Recommended GitHub Actions variables:
-- `EMAIL_FROM_ADDRESS` — use a verified sender if you want delivery beyond the Resend account owner
+
+- `EMAIL_FROM_ADDRESS`
 - `EMAIL_FROM_NAME`
-- `MANUAL_RUN_RECIPIENTS` — optional comma-separated list for `workflow_dispatch` runs; if unset, manual runs default to the first recipient in `config.yaml`
-- `EMAIL_RECIPIENTS_OVERRIDE` — optional comma-separated override for any run
+- `MANUAL_RUN_RECIPIENTS`
+- `EMAIL_RECIPIENTS_OVERRIDE`
 - `SEATS_AERO_REQUEST_DELAY_SECONDS`
+- `SEATS_AERO_MAX_RETRIES`
 - `SEATS_AERO_MAX_REQUESTS_PER_RUN`
 - `SEATS_AERO_MAX_TRIP_DETAILS_PER_SEARCH`
 - `TRANSFER_BONUS_SCRAPERS_ENABLED`
 - `TRANSFER_BONUS_SCRAPER_TIMEOUT_SECONDS`
 
-If `EMAIL_FROM_ADDRESS` is left unset, the workflow falls back to `onboarding@resend.dev`, which Resend treats as a test sender and typically only delivers to the account owner.
+If `EMAIL_FROM_ADDRESS` is left unset, the workflow falls back to `onboarding@resend.dev`, which Resend treats as a test sender and usually only delivers to the account owner.
 
-Transfer bonus scraping uses the current-bonus pages from [Frequent Miler](https://frequentmiler.com/current-point-transfer-bonuses/), [The Points Guy](https://thepointsguy.com/loyalty-programs/current-transfer-bonuses/), and [AwardWallet](https://awardwallet.com/news/credit-card-transfer-bonuses/). The scraper is best-effort; if a page fails or changes structure, the digest still runs and falls back to your manual `transfer_bonuses` entries.
+## Local Preview
 
-## Local Email Preview
-
-You can render the digest locally without hitting seats.aero or sending email:
+You can render the digest locally without calling seats.aero or sending email:
 
 ```bash
 .venv/bin/python -m src.email.preview
 ```
 
-That writes HTML and text preview files to the system temp directory so you can inspect the layout before running the workflow.
+That writes HTML and text preview files to a temp directory so you can inspect the layout before enabling the scheduled workflow.
 
 ## Project Structure
 
-```
+```text
 src/
 ├── main.py                 # Pipeline orchestrator
 ├── config.py               # YAML + env config loader
-├── models.py               # Data models
-├── state.py                # Cross-run deduplication
+├── models.py               # Core data models
+├── state.py                # Cross-run history / freshness tracking
 ├── sources/
 │   ├── seats_aero.py       # seats.aero API client
 │   └── transfer_bonuses.py # Bonus loader + current-bonus scrapers
 ├── scoring/
 │   ├── engine.py           # Composite deal scoring
-│   ├── transfer_paths.py   # Effective points cost calculator
-│   └── airline_quality.py  # Airline product tier lookups
+│   ├── transfer_paths.py   # Effective points-cost calculator
+│   └── airline_quality.py  # Airline product-tier lookups
 ├── layover/
 │   └── analyzer.py         # Hotel + transit analysis for long layovers
 ├── email/
-│   ├── builder.py          # Email content builder (Jinja2)
+│   ├── builder.py          # Email content builder
 │   ├── sender.py           # Resend integration
-│   └── templates/          # HTML + text email templates
+│   └── templates/          # HTML + text templates
 └── data/
-    ├── transfer_partners.yaml   # Credit card → airline transfer map
-    ├── airline_products.yaml    # Business class product ratings
-    └── layover_cities.yaml      # Airport hotel + transit data
+    ├── transfer_partners.yaml
+    ├── airline_products.yaml
+    └── layover_cities.yaml
 ```
 
-## Build Phases
+## Current Limitations
 
-- **Phase 1** (current): Foundation, seats.aero integration, basic scoring, manual bonuses, email
-- **Phase 2**: Transfer bonus scrapers and validation
-- **Phase 3**: Airline quality polish, CPP/cash price lookups, dedup refinement
-- **Phase 4**: Opportunistic scanning, Slack alerts, bonus pattern analysis
+- seats.aero API access is required; this project is not useful without it.
+- Transfer-bonus scraping is best-effort and depends on third-party page structure.
+- Cash-price / cents-per-point validation is still basic.
+- The digest is optimized for business-class redemption scanning, not general award-search use cases.
+
+## Roadmap
+
+- Better cash-price / CPP enrichment
+- Stronger deduplication and ranking refinement
+- More opportunistic-search modes
+- Alternative delivery channels beyond email
+
+## Development
+
+Install with dev dependencies:
+
+```bash
+pip install -e ".[dev]"
+```
+
+Run tests:
+
+```bash
+pytest
+```
