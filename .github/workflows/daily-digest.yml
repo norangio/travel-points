@@ -43,26 +43,6 @@ jobs:
         env:
           CONFIG_YAML: ${{ secrets.CONFIG_YAML }}
 
-      - name: Debug config structure
-        run: |
-          echo "=== config.yaml byte count ==="
-          wc -c config.yaml
-          echo "=== config.yaml line count ==="
-          wc -l config.yaml
-          echo "=== first 10 lines: keys only (values hidden) ==="
-          head -10 config.yaml | awk '{
-            indent = match($0, /[^ ]/) - 1
-            if (indent < 0) indent = 0
-            spaces = ""
-            for (i = 0; i < indent; i++) spaces = spaces " "
-            if ($0 ~ /^[[:space:]]*$/) { print NR": (blank)"; next }
-            if ($0 ~ /^[[:space:]]*#/) { print NR": (comment)"; next }
-            split($0, parts, ":")
-            key = parts[1]
-            sub(/^[[:space:]]+/, "", key)
-            print NR": "spaces"[indent="indent"] "key":"
-          }'
-
       - name: Install dependencies
         run: |
           pip install --upgrade pip
