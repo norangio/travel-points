@@ -1,5 +1,30 @@
 # Points Deal Finder — Project Notes
 
+## TODO: Migrate from GitHub Actions to self-hosted systemd timer
+
+The current GitHub Actions setup requires a base64-encoded `CONFIG_YAML_B64` secret
+because the repo is public and `config.yaml` has personal data. Updating trips or
+balances means: edit local config → base64 encode → paste into GitHub secret UI →
+re-run. Too much friction for something touched often.
+
+**Plan**: run as a systemd timer on a self-hosted server, matching the pattern
+already used for other projects in this workspace (see global MEMORY for server
+details — not included here because this file is public).
+
+- Code lives in git, `config.yaml` and `.env` live on the server, edited in place
+- Scheduling via systemd timer (same slot as the current GH cron — 01:00 UTC)
+- `state/last_run.json` persists naturally on the filesystem, no cache dance
+- Deploy: `deploy.sh` (local) rsyncs + restarts, `server-deploy.sh` (remote) sets
+  up systemd units. Matches the pattern in other projects.
+- Manual run: `systemctl start travel-points`
+- Logs: `journalctl -u travel-points -f`
+- Pause: `systemctl stop travel-points.timer`
+
+Cleanup once server deploy is working end-to-end:
+- Delete `.github/workflows/daily-digest.yml`
+- Delete GitHub secrets: `CONFIG_YAML_B64`, `SEATS_AERO_API_KEY`, `RESEND_API_KEY`
+- Update README + this CLAUDE.md to reflect server-only deployment
+
 ## Architecture
 
 - **Orchestrator**: `src/main.py` — daily pipeline: load config → fetch bonuses → query seats.aero → score deals → analyze layovers → build email → send → save state
