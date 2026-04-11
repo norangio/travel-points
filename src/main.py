@@ -354,10 +354,11 @@ def _build_search_legs(
             earliest = earliest - timedelta(days=flex)
         if latest and flex:
             latest = latest + timedelta(days=flex)
+        outbound_origins = outbound_cfg.get("origins") or origins
 
         legs.append({
             "direction": "outbound",
-            "from_airports": origins,
+            "from_airports": outbound_origins,
             "to_airports": dest_airports,
             "earliest": earliest,
             "latest": latest,
@@ -370,12 +371,13 @@ def _build_search_legs(
             earliest = earliest - timedelta(days=flex)
         if latest and flex:
             latest = latest + timedelta(days=flex)
+        return_destinations = return_cfg.get("destinations") or origins
 
         # Return = destination → origin (reversed)
         legs.append({
             "direction": "return",
             "from_airports": dest_airports,
-            "to_airports": origins,
+            "to_airports": return_destinations,
             "earliest": earliest,
             "latest": latest,
         })
