@@ -1,5 +1,5 @@
 import unittest
-from datetime import date
+from datetime import date, timedelta
 
 from src.models import TransferBonus
 from src.sources.transfer_bonuses import (
@@ -29,6 +29,9 @@ TRANSFER_PARTNERS = {
         }
     },
 }
+
+FUTURE_END_DATE = date.today() + timedelta(days=30)
+FUTURE_END_DATE_STR = FUTURE_END_DATE.isoformat()
 
 
 class TransferBonusScraperTest(unittest.TestCase):
@@ -137,7 +140,7 @@ class TransferBonusScraperTest(unittest.TestCase):
                 bonus_percentage=0.20,
                 source_name="Frequent Miler",
                 source_url="https://frequentmiler.com/current-point-transfer-bonuses/",
-                end_date=date(2026, 3, 31),
+                end_date=FUTURE_END_DATE,
             ),
             ScrapedBonusCandidate(
                 source_program="chase_ur",
@@ -145,7 +148,7 @@ class TransferBonusScraperTest(unittest.TestCase):
                 bonus_percentage=0.20,
                 source_name="The Points Guy",
                 source_url="https://thepointsguy.com/loyalty-programs/current-transfer-bonuses/",
-                end_date=date(2026, 3, 31),
+                end_date=FUTURE_END_DATE,
             ),
         ])
 
@@ -160,7 +163,7 @@ class TransferBonusScraperTest(unittest.TestCase):
             target_program="avios",
             bonus_percentage=0.20,
             effective_rate=1.2,
-            end_date=date(2026, 3, 31),
+            end_date=FUTURE_END_DATE,
             source_url="https://example.com/manual",
             verified=True,
             notes="Manual entry",
@@ -170,7 +173,7 @@ class TransferBonusScraperTest(unittest.TestCase):
             target_program="avios",
             bonus_percentage=0.20,
             effective_rate=1.2,
-            end_date=date(2026, 3, 31),
+            end_date=FUTURE_END_DATE,
             source_url="https://frequentmiler.com/current-point-transfer-bonuses/",
             verified=False,
             notes="Sources: Frequent Miler",
@@ -189,7 +192,7 @@ class TransferBonusScraperTest(unittest.TestCase):
                     "source_program": "chase_ur",
                     "target_program": "avios",
                     "bonus_percentage": 0.20,
-                    "end_date": "2026-03-31",
+                    "end_date": FUTURE_END_DATE_STR,
                 }
             ]
         }

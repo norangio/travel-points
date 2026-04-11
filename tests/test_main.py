@@ -4,6 +4,7 @@ from unittest.mock import patch
 
 from src.main import (
     _build_route_candidates,
+    _build_search_legs,
     _count_planned_search_calls,
     _trip_detail_lookup_cap,
     _trip_urgency_order,
@@ -28,6 +29,35 @@ class MainHelpersTest(unittest.TestCase):
         total = _count_planned_search_calls(trips=trips, origins=["SAN", "LAX"])
 
         self.assertEqual(total, 8)
+
+    def test_build_search_legs_uses_per_trip_airport_overrides(self) -> None:
+        trip = {
+            "destinations": [
+                {"preferred_airports": ["LIS", "MAD"]},
+            ],
+            "outbound": {
+                "origins": ["ORD", "MDW"],
+                "earliest": "2026-12-26",
+                "latest": "2026-12-28",
+            },
+            "return": {
+                "destinations": ["LAX", "SFO"],
+                "earliest": "2027-01-01",
+                "latest": "2027-01-03",
+            },
+        }
+
+        legs = _build_search_legs(
+            trip=trip,
+            origins=["SAN", "LAX"],
+            dest_airports=["LIS", "MAD"],
+            flex=0,
+        )
+
+        self.assertEqual(legs[0]["from_airports"], ["ORD", "MDW"])
+        self.assertEqual(legs[0]["to_airports"], ["LIS", "MAD"])
+        self.assertEqual(legs[1]["from_airports"], ["LIS", "MAD"])
+        self.assertEqual(legs[1]["to_airports"], ["LAX", "SFO"])
 
     def test_build_route_candidates_filters_low_seat_and_untransferable_hits(self) -> None:
         raw_results = [

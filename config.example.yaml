@@ -26,9 +26,13 @@ trips:
       - region: asia
         preferred_airports: [NRT, HND, ICN, SIN, BKK, HKG]
     outbound:
+      # Optional: set origins here to override the top-level origins for this trip.
+      # origins: [ORD, MDW]
       earliest: "2027-03-01"
       latest: "2027-03-15"
     return:
+      # Optional: set destinations here to override the top-level return airports.
+      # destinations: [LAX, SFO]
       earliest: "2027-04-01"
       latest: "2027-05-31"
     flexibility_days: 5
