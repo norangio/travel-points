@@ -2,6 +2,12 @@
 .env
 config.yaml
 
+# Local deploy config (contains server host/credentials)
+.deploy-env
+
+# Internal migration/planning docs (may contain infra details)
+VPS_MIGRATION_PLAN.md
+
 # Python
 __pycache__/
 *.py[cod]

@@ -116,34 +116,28 @@ Configuration tips:
 - Add an `email_note` for short context under a trip heading in the digest.
 - Keep manual `transfer_bonuses` entries for edge cases or scraper misses.
 
-## GitHub Actions
+## Deployment
 
-The repo includes a scheduled GitHub Actions workflow for automatic daily runs.
+The repo is designed to run as a systemd timer on any Linux host you control.
 
-- Workflow: [`.github/workflows/daily-digest.yml`](./.github/workflows/daily-digest.yml)
-- Schedule: `00:00 UTC` daily
-- Manual trigger: `workflow_dispatch`
+- `travel-points.service` — oneshot unit that runs `python -m src.main`
+- `travel-points.timer` — daily schedule (`*-*-* 00:00:00` UTC)
+- `deploy.sh` — local script: pushes to GitHub, SSHes to your host, reinstalls deps, reloads timer
+- `deploy/server-deploy.sh` — server-side installer (called by `deploy.sh`)
 
-Required GitHub secrets:
+On the server, place these files under `/opt/travel-points/`:
+- `config.yaml` — your personal config (gitignored, edited in place on the server)
+- `.env` — `SEATS_AERO_API_KEY`, `RESEND_API_KEY`
 
-- `SEATS_AERO_API_KEY`
-- `RESEND_API_KEY`
-- `CONFIG_YAML_B64` — base64-encoded contents of your private `config.yaml`
+The deploy script reads the SSH target from a gitignored local file
+(`.deploy-env`) so the repo stays free of personal infra details. See that
+file's template in `deploy.sh`.
 
-Recommended GitHub Actions variables:
-
-- `EMAIL_FROM_ADDRESS`
-- `EMAIL_FROM_NAME`
-- `MANUAL_RUN_RECIPIENTS`
-- `EMAIL_RECIPIENTS_OVERRIDE`
-- `SEATS_AERO_REQUEST_DELAY_SECONDS`
-- `SEATS_AERO_MAX_RETRIES`
-- `SEATS_AERO_MAX_REQUESTS_PER_RUN`
-- `SEATS_AERO_MAX_TRIP_DETAILS_PER_SEARCH`
-- `TRANSFER_BONUS_SCRAPERS_ENABLED`
-- `TRANSFER_BONUS_SCRAPER_TIMEOUT_SECONDS`
-
-If `EMAIL_FROM_ADDRESS` is left unset, the workflow falls back to `onboarding@resend.dev`, which Resend treats as a test sender and usually only delivers to the account owner.
+Common operations:
+- Trigger a run now: `systemctl start travel-points.service`
+- Tail logs: `journalctl -u travel-points -f`
+- Pause scheduled runs: `systemctl stop travel-points.timer`
+- Ad-hoc test run without polluting state: `TRAVEL_POINTS_MANUAL=1 /opt/travel-points/venv/bin/python -m src.main`
 
 ## Local Preview
 

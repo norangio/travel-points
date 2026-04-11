@@ -1,30 +1,5 @@
 # Points Deal Finder — Project Notes
 
-## TODO: Migrate from GitHub Actions to self-hosted systemd timer
-
-The current GitHub Actions setup requires a base64-encoded `CONFIG_YAML_B64` secret
-because the repo is public and `config.yaml` has personal data. Updating trips or
-balances means: edit local config → base64 encode → paste into GitHub secret UI →
-re-run. Too much friction for something touched often.
-
-**Plan**: run as a systemd timer on a self-hosted server, matching the pattern
-already used for other projects in this workspace (see global MEMORY for server
-details — not included here because this file is public).
-
-- Code lives in git, `config.yaml` and `.env` live on the server, edited in place
-- Scheduling via systemd timer (same slot as the current GH cron — 01:00 UTC)
-- `state/last_run.json` persists naturally on the filesystem, no cache dance
-- Deploy: `deploy.sh` (local) rsyncs + restarts, `server-deploy.sh` (remote) sets
-  up systemd units. Matches the pattern in other projects.
-- Manual run: `systemctl start travel-points`
-- Logs: `journalctl -u travel-points -f`
-- Pause: `systemctl stop travel-points.timer`
-
-Cleanup once server deploy is working end-to-end:
-- Delete `.github/workflows/daily-digest.yml`
-- Delete GitHub secrets: `CONFIG_YAML_B64`, `SEATS_AERO_API_KEY`, `RESEND_API_KEY`
-- Update README + this CLAUDE.md to reflect server-only deployment
-
 ## Architecture
 
 - **Orchestrator**: `src/main.py` — daily pipeline: load config → fetch bonuses → query seats.aero → score deals → analyze layovers → build email → send → save state
@@ -35,7 +10,7 @@ Cleanup once server deploy is working end-to-end:
 - **Scoring**: `src/scoring/engine.py` (composite 0-100 score), `transfer_paths.py` (effective cost calc), `airline_quality.py` (product tier lookups)
 - **Layover analysis**: `src/layover/analyzer.py` — for layovers >4h, looks up hotel costs (3-star+ near airport & city center) and transit options from `src/data/layover_cities.yaml`
 - **Email**: `src/email/builder.py` (Jinja2 rendering), `sender.py` (Resend API), templates in `src/email/templates/`
-- **State**: `src/state.py` — deal history tracking (first_seen dates, NOT suppression). Manual `workflow_dispatch` triggers skip state saves to avoid polluting history during testing
+- **State**: `src/state.py` — deal history tracking (first_seen dates, NOT suppression). Ad-hoc manual runs with `TRAVEL_POINTS_MANUAL=1` skip state saves to avoid polluting history during testing
 
 ## Static Data Files
 
@@ -60,8 +35,7 @@ Matches the Morning Brief email styling from email-reports:
 - `config.yaml` — user config (balances, trips, origins, routing filters, email recipients) — **gitignored** (copy from `config.example.yaml`)
 - `config.example.yaml` — template with comments explaining format
 - `.env` — secrets (SEATS_AERO_API_KEY, RESEND_API_KEY) — gitignored
-- GitHub Actions secrets: SEATS_AERO_API_KEY, RESEND_API_KEY
-- GitHub Actions vars: `EMAIL_FROM_ADDRESS`, `EMAIL_FROM_NAME`, `MANUAL_RUN_RECIPIENTS`, `EMAIL_RECIPIENTS_OVERRIDE`, `SEATS_AERO_REQUEST_DELAY_SECONDS`, `SEATS_AERO_MAX_REQUESTS_PER_RUN`, `SEATS_AERO_MAX_TRIP_DETAILS_PER_SEARCH`, `TRANSFER_BONUS_SCRAPERS_ENABLED`, `TRANSFER_BONUS_SCRAPER_TIMEOUT_SECONDS`
+- `.deploy-env` — local deploy target config (`SERVER`, `REMOTE`) — gitignored
 
 ## Trip Config Format
 
@@ -86,13 +60,28 @@ trips:
 - Return: searches destination airports → origin airports (reversed)
 - Legacy `date_range` format still works (outbound only)
 
-## Deployment — GitHub Actions
+## Deployment
 
-- **Workflow**: `.github/workflows/daily-digest.yml`
-- **Schedule**: single cron at `01:00 UTC` (`6:00 PM PDT`, `5:00 PM PST`), plus manual `workflow_dispatch`
-- **State persistence**: GitHub Actions cache (deal history with first_seen dates)
-- **Manual triggers**: `workflow_dispatch` does NOT save state and defaults to the first configured recipient unless `MANUAL_RUN_RECIPIENTS` or `EMAIL_RECIPIENTS_OVERRIDE` is set
-- **Required secrets**: `SEATS_AERO_API_KEY`, `RESEND_API_KEY`
+The repo is designed to run as a systemd timer on any Linux host you control.
+
+- `travel-points.service` — oneshot unit that runs `python -m src.main`
+- `travel-points.timer` — daily schedule (`*-*-* 00:00:00` UTC)
+- `deploy.sh` — local script: pushes to GitHub, SSHes to your host, reinstalls deps, reloads timer
+- `deploy/server-deploy.sh` — server-side installer (called by `deploy.sh`)
+
+On the server, place these files under `/opt/travel-points/`:
+- `config.yaml` — your personal config (gitignored, edited in place on the server)
+- `.env` — `SEATS_AERO_API_KEY`, `RESEND_API_KEY`
+
+The deploy script reads the SSH target from a gitignored local file
+(`.deploy-env`) so the repo stays free of personal infra details. See that
+file's template in `deploy.sh`.
+
+Common operations:
+- Trigger a run now: `systemctl start travel-points.service`
+- Tail logs: `journalctl -u travel-points -f`
+- Pause scheduled runs: `systemctl stop travel-points.timer`
+- Ad-hoc test run without polluting state: `TRAVEL_POINTS_MANUAL=1 /opt/travel-points/venv/bin/python -m src.main`
 
 ## Running Locally
 
@@ -159,7 +148,7 @@ The seats.aero Partner API uses specific field names. These were discovered via 
   - https://thepointsguy.com/loyalty-programs/current-transfer-bonuses/
   - https://awardwallet.com/news/credit-card-transfer-bonuses/
 
-## Current Phase: Phase 2 (Bonus Scraping + Safer Daily Runs)
+## Current Phase: Phase 2 (Bonus Scraping + Server Deployment Complete)
 
 Implemented:
 - [x] Project scaffolding, config loader, data models
@@ -168,11 +157,11 @@ Implemented:
 - [x] Manual transfer bonus input (YAML-based)
 - [x] Layover analysis for long layovers (>4h) — hotel costs + transit
 - [x] Email template + Resend integration (matching Morning Brief style)
-- [x] GitHub Actions cron (single UTC schedule)
+- [x] Self-hosted systemd timer deployment (`travel-points.timer` at `00:00 UTC`)
 - [x] Round-trip search (outbound + return with separate date windows)
 - [x] Deal history tracking (first_seen dates, freshness badges: NEW / Day N)
 - [x] Direction labels (Outbound / Return) in email
-- [x] Manual trigger safety (workflow_dispatch skips state writes)
+- [x] Manual trigger safety (`TRAVEL_POINTS_MANUAL=1` skips state writes)
 - [x] Trip detail parsing with correct seats.aero field names (AvailabilitySegments, Carriers, TotalDuration)
 - [x] Transfer partners updated to match actual Chase UR + Capital One partner lists (including Qatar)
 - [x] JAirlines fallback for airline carrier extraction when trip detail unavailable
@@ -191,7 +180,7 @@ Not yet implemented:
 
 - [ ] Clean up one-shot diagnostic logging (`_LOGGED_RAW_KEYS`, `_LOGGED_TRIP_KEYS` flags in `seats_aero.py`) — useful during development but should be removed or put behind a DEBUG flag eventually
 - [ ] Segment-level `Carrier` is NOT in the API response — carrier info only exists at trip-level `Carriers` field. Consider parsing `FlightNumber` (e.g. "QR740") to extract per-segment carrier codes
-- [ ] After the first scheduled post-fix run, inspect `SEATS_AERO_USAGE` in the GitHub Action log to confirm real-world request counts under the new caps
+- [ ] After the first scheduled post-fix run, inspect `SEATS_AERO_USAGE` in `journalctl` logs to confirm real-world request counts under the new caps
 - [ ] After the first scheduled post-fix run, check the live delivered email in Gmail/Outlook for final rendering quirks versus the local preview
 - [ ] Consider adding more airline products to `src/data/airline_products.yaml` if new carriers show up as "Unknown"
 - [ ] The scoring engine weights may need tuning based on real-world deal quality

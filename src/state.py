@@ -3,10 +3,9 @@
 Design decisions:
 - Deals are NOT suppressed on repeat days. Instead, each deal tracks the
   date it was first seen, so the email can show "NEW" vs "Day N" badges.
-- Manual workflow_dispatch triggers do NOT write state, so testing never
-  pollutes the history.
-- State is stored as JSON in state/last_run.json and persisted via
-  GitHub Actions cache.
+- Ad-hoc manual runs (TRAVEL_POINTS_MANUAL=1) do NOT write state, so
+  testing never pollutes the history.
+- State is stored as JSON in state/last_run.json on the VPS filesystem.
 """
 
 from __future__ import annotations
@@ -27,9 +26,17 @@ HISTORY_RETENTION_DAYS = 30
 
 
 def is_manual_trigger() -> bool:
-    """Check if this run was triggered manually (workflow_dispatch)."""
-    event = os.environ.get("GITHUB_EVENT_NAME", "")
-    return event == "workflow_dispatch"
+    """Check if this run should skip state writes (ad-hoc testing).
+
+    Scheduled systemd runs leave the env var unset and save state normally.
+    For ad-hoc manual test runs, set TRAVEL_POINTS_MANUAL=1 to skip the
+    state write so history isn't polluted by test runs.
+    """
+    return os.environ.get("TRAVEL_POINTS_MANUAL", "").lower() in (
+        "1",
+        "true",
+        "yes",
+    )
 
 
 def load_deal_history() -> dict[str, str]:
@@ -96,8 +103,8 @@ def save_state(
     """
     Save updated deal history. Merges today's deals into existing history.
 
-    Skips save entirely on manual workflow_dispatch triggers to avoid
-    polluting history with test runs.
+    Skips save entirely on ad-hoc manual runs to avoid polluting history
+    with test runs.
     """
     if is_manual_trigger():
         logger.info(

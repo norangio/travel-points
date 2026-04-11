@@ -1,0 +1,14 @@
+[Unit]
+Description=Travel Points daily deal digest
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=root
+WorkingDirectory=/opt/travel-points
+EnvironmentFile=/opt/travel-points/.env
+ExecStart=/opt/travel-points/venv/bin/python -m src.main
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=travel-points
