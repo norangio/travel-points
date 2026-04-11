@@ -4,6 +4,12 @@ Automated award-flight deal finder and daily email digest for travelers who want
 
 This project layers your real point balances, trip windows, transfer bonuses, routing preferences, and layover tolerance on top of [seats.aero](https://seats.aero) availability so the output is not just "award space exists," but "these are the best business-class options you can realistically book right now."
 
+## Screenshots
+
+<img src="docs/images/transfer-bonus-alerts.png" alt="Transfer Bonus Alerts section of the daily digest, showing three active point transfer bonuses with end dates and source attribution" width="640" />
+
+<img src="docs/images/deal-table.png" alt="Deal table from the daily digest showing opportunistic business-class award flights with route, aircraft, mileage cost, seats, and freshness badges" width="640" />
+
 ## Why This Exists
 
 seats.aero is excellent at surfacing raw award availability, but it does not know:
