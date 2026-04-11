@@ -186,6 +186,34 @@ Not yet implemented:
 - [ ] The scoring engine weights may need tuning based on real-world deal quality
 - [ ] Run is slower now by design because the default spacing is 1.0s and trip-detail lookups are capped; tune the env vars if the logs show plenty of quota headroom
 
+## Adding Screenshots to the README
+
+Screenshots referenced by `README.md` live in `docs/images/`. Workflow when the
+user sends a screenshot (either pastes it into Claude Code or gives a file path):
+
+1. Read the file with the Read tool to confirm contents and spot any sensitive
+   data (real balances, recipient emails, API tokens visible in browser, etc.)
+   — if anything sensitive is visible, ask the user to redact before committing.
+2. Copy the file into `docs/images/<kebab-case-name>.png` via Bash `cp`.
+3. Update `README.md` to reference it with an HTML `<img>` tag so width is
+   controlled:
+
+   ```html
+   <img src="docs/images/daily-digest.png" alt="Daily digest email — deal table" width="640" />
+   ```
+
+4. Commit both the image and the README change together, conventional commit:
+   `docs(readme): add <thing> screenshot`.
+
+Rules:
+- Alt text is required — describe what the image shows.
+- Use PNG for UI screenshots, JPG for photos.
+- Keep files under ~500 KB — resize or re-compress oversized screenshots
+  before committing. The repo is public and binary bloat is permanent.
+- **NEVER commit screenshots containing real personal data** (balances, email
+  recipients, API keys, trip destinations tied to specific dates, etc.) —
+  the repo is public. If unsure, redact or regenerate from a test config.
+
 ## Git Commits
 
 - Use conventional commit format: `type(optional-scope): description`
