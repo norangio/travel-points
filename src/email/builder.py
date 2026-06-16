@@ -149,6 +149,7 @@ def build_digest_email(
     pt = ZoneInfo("America/Los_Angeles")
     now = datetime.now(pt)
     digest_date = now.strftime("%b %d, %Y")
+    digest_date_long = now.strftime("%A, %B %d, %Y")
 
     # Classify bonuses
     bonus_alerts = _classify_bonuses(bonuses)
@@ -157,9 +158,13 @@ def build_digest_email(
     total_routes = len(stats)
     total_raw_results = sum(s.get("raw_results", 0) for s in stats)
 
+    preheader = _build_preheader(deals, bonuses, total_routes)
+
     # Build template context
     context = {
         "digest_date": digest_date,
+        "digest_date_long": digest_date_long,
+        "preheader": preheader,
         "deals": deals,
         "deal_summary_rows": _build_deal_summary_rows(
             deals,
@@ -193,6 +198,37 @@ def build_digest_email(
         html_body=html_body,
         text_body=text_body,
     )
+
+
+def _build_preheader(
+    deals: list[ScoredDeal],
+    bonuses: list[TransferBonus],
+    total_routes: int,
+) -> str:
+    """Lead the inbox snippet with the single most important line."""
+    if deals:
+        n = len(deals)
+        top = deals[0]
+        a = top.availability
+        bp = top.best_path
+        route = f"{a.origin}→{a.destination}"
+        pts = f"{bp.points_needed_per_person:,} {bp.source_display_name}"
+        return (
+            f"{n} business-class award deal{'s' if n != 1 else ''} tonight"
+            f" — top {route} for {pts}/pp."
+        )
+    if bonuses:
+        n = len(bonuses)
+        return (
+            f"{n} transfer bonus alert{'s' if n != 1 else ''} active."
+            " No new award space today."
+        )
+    if total_routes:
+        return (
+            f"No new award space today across {total_routes}"
+            f" route{'s' if total_routes != 1 else ''} scanned."
+        )
+    return "No new award space today."
 
 
 def _classify_bonuses(

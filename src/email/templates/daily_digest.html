@@ -15,274 +15,269 @@
     </noscript>
     <![endif]-->
 </head>
-<body style="margin: 0; padding: 0; background-color: #f5f5f5; font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 16px; color: #333333; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%;">
+<body style="margin: 0; padding: 0; background-color: #edf2f6; font-family: Arial, Helvetica, sans-serif; font-size: 15px; line-height: 23px; color: #263746; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%;">
+
+<!-- Hidden preheader -->
+<div style="display: none; max-height: 0; overflow: hidden; mso-hide: all; font-size: 1px; line-height: 1px; color: #edf2f6;">{{ preheader }}&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;</div>
 
 <!-- Outer wrapper -->
-<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #f5f5f5;">
-<tr><td align="center" style="padding: 20px 10px;">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width: 100%; background-color: #edf2f6;">
+<tr><td align="center" style="padding: 24px 10px;">
 
-<!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600"><tr><td><![endif]-->
-<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width: 600px; background-color: #ffffff;">
+<!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="640" align="center"><tr><td><![endif]-->
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width: 100%; max-width: 640px; margin: 0 auto; background-color: #ffffff; border: 1px solid #d6e0e8; border-radius: 10px;">
 
-<!-- HEADER -->
+<!-- MASTHEAD -->
 <tr>
-<td style="padding: 30px 40px 20px 40px; border-bottom: 2px solid #0066cc;">
-    <h1 style="margin: 0; font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 24pt; font-weight: normal; color: #0066cc;">
-        Points Deal Finder
-    </h1>
-    <p style="margin: 10px 0 0 0; font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 16px; color: #666666;">
-        {{ digest_date }} Evening Digest
-    </p>
+<td style="padding: 34px 38px 30px 38px; background-color: #123f60; border-radius: 9px 9px 0 0;">
+    <p style="margin: 0 0 10px 0; font-size: 11px; font-weight: bold; line-height: 16px; color: #b9d4e7; text-transform: uppercase; letter-spacing: 1.4px;">Daily Award Digest</p>
+    <h1 style="margin: 0; font-size: 30px; font-weight: bold; line-height: 36px; color: #ffffff;">Points Deal Finder</h1>
+    <p style="margin: 9px 0 0 0; font-size: 14px; line-height: 21px; color: #d7e7f2;">{{ digest_date_long }}</p>
 </td>
 </tr>
 
 {% if has_bonuses %}
 <!-- TRANSFER BONUS ALERTS -->
 <tr>
-<td style="padding: 20px 40px 10px 40px;">
-    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+<td style="padding: 24px 30px 12px 30px;">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width: 100%; border: 1px solid #d6e0e8; border-radius: 8px;">
     <tr>
-        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 16px; font-weight: bold; color: #333333; padding-bottom: 12px; border-bottom: 2px solid #0066cc;">
-            Transfer Bonus Alerts
+        <td style="padding: 13px 18px; background-color: #eaf2f8; border-radius: 7px 7px 0 0;">
+            <p style="margin: 0 0 2px 0; font-size: 10px; font-weight: bold; line-height: 15px; color: #718392; text-transform: uppercase; letter-spacing: 1px;">Alerts</p>
+            <h2 style="margin: 0; font-size: 19px; font-weight: bold; line-height: 25px; color: #203b50;">Transfer Bonus Alerts</h2>
         </td>
     </tr>
-    </table>
-
-    {% for category, label, color in [('expiring_soon', 'EXPIRING SOON', '#cc3300'), ('new', 'NEW', '#009933'), ('active', 'ACTIVE', '#0066cc')] %}
-    {% if bonus_alerts[category] %}
-    {% for bonus in bonus_alerts[category] %}
-    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top: 10px;">
     <tr>
-        <td style="padding: 10px 14px; background-color: {{ '#fff5f5' if category == 'expiring_soon' else '#f0f8ff' if category == 'active' else '#f0fff0' }}; border-left: 4px solid {{ color }}; border-radius: 4px;">
-            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
-            <tr>
-                <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 11px; font-weight: bold; color: {{ color }}; text-transform: uppercase; letter-spacing: 0.5px;">
-                    {{ label }}
+        <td style="padding: 16px 18px 18px 18px; background-color: #ffffff; border-radius: 0 0 7px 7px;">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width: 100%; font-size: 13px; border-collapse: collapse; border: 1px solid #d8e3ec;">
+            <tr style="background-color: #eaf2f8;">
+                <td style="padding: 8px; border-bottom: 1px solid #d8e3ec; font-weight: bold; color: #536878;">Transfer</td>
+                <td align="right" style="padding: 8px; border-bottom: 1px solid #d8e3ec; font-weight: bold; color: #536878; white-space: nowrap;">Bonus</td>
+                <td style="padding: 8px; border-bottom: 1px solid #d8e3ec; font-weight: bold; color: #536878;">Status</td>
+            </tr>
+            {% set bns = namespace(idx=0) %}
+            {% for category, label, color in [('expiring_soon', 'Expiring soon', '#dc2626'), ('new', 'New', '#16a34a'), ('active', 'Active', '#536878')] %}
+            {% for bonus in bonus_alerts[category] %}
+            {% set bns.idx = bns.idx + 1 %}
+            <tr style="background-color: {{ '#ffffff' if bns.idx is odd else '#f7f9fb' }};">
+                <td style="padding: 8px; border-bottom: 1px solid #e8eef3; color: #263746;">
+                    <span style="font-weight: bold;">{{ bonus.source_program | program_label }}</span> &rarr; {{ bonus.target_program | program_label }}
+                    {% if bonus.notes %}<br><span style="font-size: 11px; color: #637789;">{{ bonus.notes }}</span>{% endif %}
+                </td>
+                <td align="right" style="padding: 8px; border-bottom: 1px solid #e8eef3; color: #16a34a; font-weight: bold; white-space: nowrap;">+{{ (bonus.bonus_percentage * 100) | int }}%</td>
+                <td style="padding: 8px; border-bottom: 1px solid #e8eef3; color: #536878; white-space: nowrap;">
+                    <span style="color: {{ color }}; font-weight: bold; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px;">{{ label }}</span>
+                    {% if bonus.end_date %}<br><span style="color: #7c8c99; font-size: 11px;">ends {{ bonus.end_date.strftime('%b %d') }}{% if bonus.days_remaining is not none %} ({{ bonus.days_remaining }}d){% endif %}</span>{% endif %}
                 </td>
             </tr>
-            <tr>
-                <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 15px; color: #333333; padding-top: 4px;">
-                    {{ bonus.source_program | program_label }} → {{ bonus.target_program | program_label }}:
-                    <strong>+{{ (bonus.bonus_percentage * 100) | int }}% bonus</strong>
-                    {% if bonus.end_date %}
-                    <span style="color: #666666;">(ends {{ bonus.end_date.strftime('%b %d') }}{% if bonus.days_remaining is not none %} — {{ bonus.days_remaining }} days{% endif %})</span>
-                    {% endif %}
-                </td>
-            </tr>
-            {% if bonus.notes %}
-            <tr>
-                <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 13px; color: #666666; padding-top: 2px;">
-                    {{ bonus.notes }}
-                </td>
-            </tr>
-            {% endif %}
+            {% endfor %}
+            {% endfor %}
             </table>
         </td>
     </tr>
     </table>
-    {% endfor %}
-    {% endif %}
-    {% endfor %}
 </td>
 </tr>
 {% endif %}
 
-<!-- DEAL COUNT SUMMARY -->
+<!-- DEALS -->
 <tr>
-<td style="padding: 20px 40px 10px 40px;">
-    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+<td style="padding: 12px 30px;">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width: 100%; border: 1px solid #d6e0e8; border-radius: 8px;">
     <tr>
-        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 16px; font-weight: bold; color: #333333; padding-bottom: 12px; border-bottom: 2px solid #0066cc;">
-            {% if total_deals > 0 %}
-            Top {{ total_deals }} Deal{{ 's' if total_deals != 1 else '' }} Tonight
-            {% else %}
-            No Deals Found Today
-            {% endif %}
+        <td style="padding: 13px 18px; background-color: #eaf2f8; border-radius: 7px 7px 0 0;">
+            <p style="margin: 0 0 2px 0; font-size: 10px; font-weight: bold; line-height: 15px; color: #718392; text-transform: uppercase; letter-spacing: 1px;">Award Space</p>
+            <h2 style="margin: 0; font-size: 19px; font-weight: bold; line-height: 25px; color: #203b50;">
+                {% if total_deals > 0 %}Top {{ total_deals }} Deal{{ 's' if total_deals != 1 else '' }} Tonight{% else %}No Deals Found Today{% endif %}
+            </h2>
         </td>
     </tr>
-    </table>
-</td>
-</tr>
-
-{% if deals %}
-<!-- DEALS TABLE -->
-<tr>
-<td style="padding: 0 40px 8px 40px;">
-    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border: 1px solid #d9e2ec; border-collapse: collapse;">
     <tr>
-        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 11px; font-weight: bold; color: #234; background-color: #eef4fb; padding: 6px 8px; border-bottom: 1px solid #d9e2ec;">Route</td>
-        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 11px; font-weight: bold; color: #234; background-color: #eef4fb; padding: 6px 8px; border-bottom: 1px solid #d9e2ec;">Date</td>
-        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 11px; font-weight: bold; color: #234; background-color: #eef4fb; padding: 6px 8px; border-bottom: 1px solid #d9e2ec;">Flight</td>
-        <td align="right" style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 11px; font-weight: bold; color: #234; background-color: #eef4fb; padding: 6px 8px; border-bottom: 1px solid #d9e2ec;">Points/pp</td>
+        <td style="padding: 16px 18px 18px 18px; background-color: #ffffff; border-radius: 0 0 7px 7px;">
+
+    {% if deals %}
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width: 100%; font-size: 12px; border-collapse: collapse; border: 1px solid #d8e3ec;">
+    <tr style="background-color: #eaf2f8;">
+        <td style="padding: 8px; font-weight: bold; color: #536878; border-bottom: 1px solid #d8e3ec;">Route</td>
+        <td style="padding: 8px; font-weight: bold; color: #536878; border-bottom: 1px solid #d8e3ec; white-space: nowrap;">Date</td>
+        <td style="padding: 8px; font-weight: bold; color: #536878; border-bottom: 1px solid #d8e3ec;">Flight</td>
+        <td align="right" style="padding: 8px; font-weight: bold; color: #536878; border-bottom: 1px solid #d8e3ec;">Points/pp</td>
     </tr>
-    {% set ns = namespace(current_trip='') %}
+    {% set ns = namespace(current_trip='', deal_idx=0) %}
     {% for row in deal_summary_rows %}
     {% if row.trip_name != ns.current_trip %}
     {% set ns.current_trip = row.trip_name %}
     <tr>
-        <td colspan="4" style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 12px; font-weight: bold; color: #0066cc; background-color: #f0f6ff; padding: 6px 8px; border-bottom: 1px solid #d9e2ec; text-transform: uppercase; letter-spacing: 0.4px;">
+        <td colspan="4" style="padding: 8px; background-color: #f1f6fa; border-top: 1px solid #d8e3ec; border-bottom: 1px solid #d8e3ec; font-size: 12px; font-weight: bold; color: #203b50; text-transform: uppercase; letter-spacing: 0.4px;">
             {{ row.trip_name }}
             {% if trip_date_blurbs.get(row.trip_name) %}
-            <br><span style="font-size: 11px; color: #888; font-weight: normal; text-transform: none; letter-spacing: 0;">{{ trip_date_blurbs[row.trip_name] }}</span>
+            <br><span style="font-size: 11px; color: #7c8c99; font-weight: normal; text-transform: none; letter-spacing: 0;">{{ trip_date_blurbs[row.trip_name] }}</span>
             {% endif %}
             {% if trip_notes.get(row.trip_name) %}
-            <br><span style="font-size: 11px; color: #666; font-weight: normal; text-transform: none; letter-spacing: 0;">{{ trip_notes[row.trip_name] }}</span>
+            <br><span style="font-size: 11px; color: #637789; font-weight: normal; text-transform: none; letter-spacing: 0;">{{ trip_notes[row.trip_name] }}</span>
             {% endif %}
         </td>
     </tr>
     {% endif %}
-    <tr>
-        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 13px; color: #333; padding: 8px 8px 2px 8px; font-weight: bold;">{{ row.route }}</td>
-        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 13px; color: #555; padding: 8px 8px 2px 8px; white-space: nowrap;">{{ row.date }}</td>
-        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 13px; color: #555; padding: 8px 8px 2px 8px;">{{ row.airline }}{% if row.aircraft %} <span style="color: #999;">· {{ row.aircraft }}</span>{% endif %}</td>
-        <td align="right" style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 13px; color: #0066cc; font-weight: bold; padding: 8px 8px 2px 8px; white-space: nowrap;">
+    {% set ns.deal_idx = ns.deal_idx + 1 %}
+    {% set row_bg = '#ffffff' if ns.deal_idx is odd else '#f7f9fb' %}
+    <tr style="background-color: {{ row_bg }};">
+        <td style="padding: 8px 8px 2px 8px; color: #263746; font-weight: bold;">{{ row.route }}</td>
+        <td style="padding: 8px 8px 2px 8px; color: #637789; white-space: nowrap;">{{ row.date }}</td>
+        <td style="padding: 8px 8px 2px 8px; color: #536878;">{{ row.airline }}{% if row.aircraft %} <span style="color: #7c8c99;">&middot; {{ row.aircraft }}</span>{% endif %}</td>
+        <td align="right" style="padding: 8px 8px 2px 8px; color: #203b50; font-weight: bold; white-space: nowrap;">
             {{ row.points }}
             {% if row.search_url %}
-            <br><a href="{{ row.search_url }}" style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 11px; font-weight: normal; color: #0066cc; text-decoration: underline;">View in seats.aero</a>
+            <br><a href="{{ row.search_url }}" style="font-size: 11px; font-weight: normal; color: #17689a; text-decoration: none;">View in seats.aero</a>
             {% endif %}
         </td>
     </tr>
-    <tr>
-        <td colspan="4" style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 11px; color: #888; padding: 2px 8px 8px 8px; border-bottom: 1px solid #e8eef5; line-height: 1.7;">
-            {% if row.direction_label %}<span style="color: {{ '#0066cc' if row.direction == 'outbound' else '#6a1b9a' }}; font-weight: bold;">{{ row.direction_label }}</span> &middot; {% endif -%}
+    <tr style="background-color: {{ row_bg }};">
+        <td colspan="4" style="font-size: 11px; color: #637789; padding: 2px 8px 10px 8px; border-bottom: 1px solid #e8eef3; line-height: 1.7;">
+            {% if row.direction_label %}<span style="color: #536878; font-weight: bold;">{{ row.direction_label }}</span> &middot; {% endif -%}
             {{ row.stops -}}
             {% if row.seats %} &middot; {{ row.seats }} seat{{ 's' if row.seats != 1 else '' }}{% endif %} &middot;
-            {%- if row.affordable_both %} <span style="color: #2e7d32;">✓ bookable</span>
-            {%- elif row.affordable_one %} <span style="color: #f57f17;">⚠ 1 trav only</span>
-            {%- else %} <span style="color: #cc3300;">✗ need more pts</span>
+            {%- if row.affordable_both %} <span style="color: #16a34a; font-weight: bold;">&#10003; bookable</span>
+            {%- elif row.affordable_one %} <span style="color: #637789;">&#9888; 1 trav only</span>
+            {%- else %} <span style="color: #dc2626; font-weight: bold;">&#10007; need more pts</span>
             {%- endif %} &middot;
-            <span style="color: {{ '#2e7d32' if row.is_new else '#ff8f00' }}; font-weight: bold;">{{ row.freshness_label }}</span>
-            {%- if row.bonus_text %} &middot; <span style="color: #009933; font-weight: bold;">{{ row.bonus_text }}</span>{% endif %}
+            <span style="color: {{ '#16a34a' if row.is_new else '#7c8c99' }}; font-weight: bold;">{{ row.freshness_label }}</span>
+            {%- if row.bonus_text %} &middot; <span style="color: #16a34a; font-weight: bold;">{{ row.bonus_text }}</span>{% endif %}
             {% if row.alt_paths -%}
-            <br><span style="color: #aaa;">Also:</span> {% for alt in row.alt_paths %}{{ alt }}{% if not loop.last %} &middot; {% endif %}{% endfor %}
+            <br><span style="color: #7c8c99;">Also:</span> {% for alt in row.alt_paths %}{{ alt }}{% if not loop.last %} &middot; {% endif %}{% endfor %}
             {%- endif %}
             {% for la in row.layovers -%}
-            <br><span style="color: #e65100; font-weight: bold;">&#9201; {{ la.header }}</span>
-            {%- if la.hotels %}<br><span style="padding-left: 16px; color: #888;">Hotels: {{ la.hotels | join(' · ') }}</span>{% endif %}
-            {%- if la.transit %}<br><span style="padding-left: 16px; color: #888;">Transit: {{ la.transit | join(' · ') }}</span>{% endif %}
-            {%- if la.notes %}<br><span style="padding-left: 16px; color: #e65100; font-style: italic;">{{ la.notes }}</span>{% endif %}
+            <br><span style="color: #315b78; font-weight: bold;">&#9201; {{ la.header }}</span>
+            {%- if la.hotels %}<br><span style="padding-left: 16px; color: #637789;">Hotels: {{ la.hotels | join(' &middot; ') }}</span>{% endif %}
+            {%- if la.transit %}<br><span style="padding-left: 16px; color: #637789;">Transit: {{ la.transit | join(' &middot; ') }}</span>{% endif %}
+            {%- if la.notes %}<br><span style="padding-left: 16px; color: #637789; font-style: italic;">{{ la.notes }}</span>{% endif %}
             {%- endfor %}
         </td>
     </tr>
     {% endfor %}
     </table>
-</td>
-</tr>
-{% else %}
-<!-- No deals message + search summary -->
-<tr>
-<td style="padding: 20px 40px 10px 40px;">
-    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
-    <tr>
-        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 15px; color: #666666; padding: 16px 20px; text-align: center; background-color: #f9f9f9; border-radius: 6px;">
-            No business class deals matched your criteria today. We'll keep scanning!
+    {% else %}
+    <p style="margin: 0; font-size: 15px; line-height: 23px; color: #637789;">No business class deals matched your criteria today. We'll keep scanning.</p>
+    {% endif %}
+
         </td>
     </tr>
     </table>
 </td>
 </tr>
 
-{% if search_stats %}
+{% if not deals and search_stats %}
 <!-- SEARCH SUMMARY -->
 <tr>
-<td style="padding: 10px 40px 20px 40px;">
-    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+<td style="padding: 12px 30px;">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width: 100%; border: 1px solid #d6e0e8; border-radius: 8px;">
     <tr>
-        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 13px; font-weight: bold; color: #666666; padding-bottom: 8px; border-bottom: 1px solid #e0e0e0;">
-            What We Searched — {{ total_routes_searched }} route{{ 's' if total_routes_searched != 1 else '' }}, {{ total_raw_results }} raw result{{ 's' if total_raw_results != 1 else '' }} from seats.aero
+        <td style="padding: 13px 18px; background-color: #eaf2f8; border-radius: 7px 7px 0 0;">
+            <p style="margin: 0 0 2px 0; font-size: 10px; font-weight: bold; line-height: 15px; color: #718392; text-transform: uppercase; letter-spacing: 1px;">Coverage</p>
+            <h2 style="margin: 0; font-size: 18px; font-weight: bold; line-height: 24px; color: #203b50;">What We Searched</h2>
+            <p style="margin: 4px 0 0 0; font-size: 12px; line-height: 18px; color: #637789;">{{ total_routes_searched }} route{{ 's' if total_routes_searched != 1 else '' }}, {{ total_raw_results }} raw result{{ 's' if total_raw_results != 1 else '' }} from seats.aero</p>
         </td>
     </tr>
-    </table>
-
-    <table role="presentation" cellpadding="4" cellspacing="0" border="0" width="100%" style="border-collapse: collapse; margin-top: 8px;">
-    <tr style="background-color: #f0f4f8;">
-        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 11px; font-weight: bold; color: #666666; padding: 5px 8px; border-bottom: 1px solid #dde3ea; text-transform: uppercase; letter-spacing: 0.4px;">Route</td>
-        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 11px; font-weight: bold; color: #666666; padding: 5px 8px; border-bottom: 1px solid #dde3ea; text-transform: uppercase; letter-spacing: 0.4px;">Dir</td>
-        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 11px; font-weight: bold; color: #666666; padding: 5px 8px; border-bottom: 1px solid #dde3ea; text-transform: uppercase; letter-spacing: 0.4px;">Trip</td>
-        <td align="right" style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 11px; font-weight: bold; color: #666666; padding: 5px 8px; border-bottom: 1px solid #dde3ea; text-transform: uppercase; letter-spacing: 0.4px;">Results</td>
+    <tr>
+        <td style="padding: 16px 18px 18px 18px; background-color: #ffffff; border-radius: 0 0 7px 7px;">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width: 100%; font-size: 12px; border-collapse: collapse; border: 1px solid #d8e3ec;">
+            <tr style="background-color: #eaf2f8;">
+                <td style="padding: 8px; font-weight: bold; color: #536878; border-bottom: 1px solid #d8e3ec;">Route</td>
+                <td style="padding: 8px; font-weight: bold; color: #536878; border-bottom: 1px solid #d8e3ec;">Dir</td>
+                <td style="padding: 8px; font-weight: bold; color: #536878; border-bottom: 1px solid #d8e3ec;">Trip</td>
+                <td align="right" style="padding: 8px; font-weight: bold; color: #536878; border-bottom: 1px solid #d8e3ec;">Results</td>
+            </tr>
+            {% for stat in search_stats %}
+            <tr style="background-color: {{ '#ffffff' if loop.index is odd else '#f7f9fb' }};">
+                <td style="padding: 8px; color: #263746; font-weight: bold; border-bottom: 1px solid #e8eef3;">{{ stat.route }}</td>
+                <td style="padding: 8px; color: #536878; border-bottom: 1px solid #e8eef3;">{{ stat.direction }}</td>
+                <td style="padding: 8px; color: #637789; border-bottom: 1px solid #e8eef3;">{{ stat.trip_name }}</td>
+                <td align="right" style="padding: 8px; color: {{ '#16a34a' if stat.raw_results > 0 else '#7c8c99' }}; font-weight: bold; border-bottom: 1px solid #e8eef3;">{{ stat.raw_results }}</td>
+            </tr>
+            {% endfor %}
+            </table>
+        </td>
     </tr>
-    {% for stat in search_stats %}
-    <tr style="background-color: {{ '#ffffff' if loop.index is odd else '#f8f9fa' }};">
-        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 13px; color: #333333; padding: 4px 8px; border-bottom: 1px solid #eef0f3; font-weight: bold;">{{ stat.route }}</td>
-        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 12px; color: {{ '#0066cc' if stat.direction == 'Outbound' else '#6a1b9a' }}; padding: 4px 8px; border-bottom: 1px solid #eef0f3;">{{ stat.direction }}</td>
-        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 12px; color: #777777; padding: 4px 8px; border-bottom: 1px solid #eef0f3;">{{ stat.trip_name }}</td>
-        <td align="right" style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 13px; color: {{ '#2e7d32' if stat.raw_results > 0 else '#999999' }}; padding: 4px 8px; border-bottom: 1px solid #eef0f3;">{{ stat.raw_results }}</td>
-    </tr>
-    {% endfor %}
     </table>
 </td>
 </tr>
 {% endif %}
-{% endif %}
 
-<!-- BALANCES FOOTER -->
+<!-- BALANCES -->
 <tr>
-<td style="padding: 20px 40px; border-top: 1px solid #eee;">
-    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+<td style="padding: 12px 30px;">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width: 100%; border: 1px solid #d6e0e8; border-radius: 8px;">
     <tr>
-        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 14px; font-weight: bold; color: #333333; padding-bottom: 8px;">
-            Your Point Balances
+        <td style="padding: 13px 18px; background-color: #eaf2f8; border-radius: 7px 7px 0 0;">
+            <p style="margin: 0 0 2px 0; font-size: 10px; font-weight: bold; line-height: 15px; color: #718392; text-transform: uppercase; letter-spacing: 1px;">Accounts</p>
+            <h2 style="margin: 0; font-size: 18px; font-weight: bold; line-height: 24px; color: #203b50;">Your Point Balances</h2>
         </td>
     </tr>
-    {% for program, balance in balances.items() %}
     <tr>
-        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 14px; color: #555555; padding: 2px 0;">
-            {{ program | replace('_', ' ') | title }}: <strong>{{ '{:,}'.format(balance) }}</strong>
+        <td style="padding: 16px 18px 18px 18px; background-color: #ffffff; border-radius: 0 0 7px 7px;">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width: 100%; font-size: 13px; border-collapse: collapse; border: 1px solid #d8e3ec;">
+            {% for program, balance in balances.items() %}
+            <tr style="background-color: {{ '#ffffff' if loop.index is odd else '#f7f9fb' }};">
+                <td style="padding: 8px; color: #263746; border-bottom: 1px solid #e8eef3;">{{ program | replace('_', ' ') | title }}</td>
+                <td align="right" style="padding: 8px; color: #203b50; font-weight: bold; white-space: nowrap; border-bottom: 1px solid #e8eef3;">{{ '{:,}'.format(balance) }}</td>
+            </tr>
+            {% endfor %}
+            </table>
         </td>
     </tr>
-    {% endfor %}
     </table>
 </td>
 </tr>
 
 <!-- TRANSFER PARTNER REFERENCE -->
 <tr>
-<td style="padding: 20px 40px; border-top: 1px solid #eee;">
-    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+<td style="padding: 12px 30px 24px 30px;">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width: 100%; border: 1px solid #d6e0e8; border-radius: 8px;">
     <tr>
-        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 14px; font-weight: bold; color: #333333; padding-bottom: 10px;">
-            Transfer Partner Reference
+        <td style="padding: 13px 18px; background-color: #eaf2f8; border-radius: 7px 7px 0 0;">
+            <p style="margin: 0 0 2px 0; font-size: 10px; font-weight: bold; line-height: 15px; color: #718392; text-transform: uppercase; letter-spacing: 1px;">Reference</p>
+            <h2 style="margin: 0; font-size: 18px; font-weight: bold; line-height: 24px; color: #203b50;">Transfer Partner Reference</h2>
+        </td>
+    </tr>
+    <tr>
+        <td style="padding: 16px 18px 18px 18px; background-color: #ffffff; border-radius: 0 0 7px 7px;">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width: 100%; font-size: 12px; border-collapse: collapse; border: 1px solid #d8e3ec;">
+            <tr style="background-color: #eaf2f8;">
+                <td style="padding: 8px; font-weight: bold; color: #536878; border-bottom: 1px solid #d8e3ec;">Loyalty Program</td>
+                {% for col in transfer_partner_table.columns %}
+                <td align="center" style="padding: 8px; font-weight: bold; color: #536878; border-bottom: 1px solid #d8e3ec; white-space: nowrap;">{{ col }}</td>
+                {% endfor %}
+            </tr>
+            {% for row in transfer_partner_table.rows %}
+            <tr style="background-color: {{ '#ffffff' if loop.index is odd else '#f7f9fb' }};">
+                <td style="padding: 8px; color: #263746; border-bottom: 1px solid #e8eef3;">{{ row.name }}</td>
+                {% for cell in row.cells %}
+                <td align="center" style="padding: 8px; color: {{ '#263746' if cell else '#b8c4cd' }}; border-bottom: 1px solid #e8eef3; white-space: nowrap;">{% if cell %}{{ cell }}{% else %}&mdash;{% endif %}</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+            </table>
+            {% if transfer_partner_table.has_reduced_rate %}
+            <p style="margin: 8px 0 0 0; font-size: 11px; line-height: 17px; color: #7c8c99;">&#9733; Reduced rate: 4:3 (1,000 points &rarr; 750 miles)</p>
+            {% endif %}
         </td>
     </tr>
     </table>
+</td>
+</tr>
 
-    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border: 1px solid #d9e2ec; border-collapse: collapse;">
-    <tr>
-        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 11px; font-weight: bold; color: #234; background-color: #eef4fb; padding: 5px 8px; border-bottom: 1px solid #d9e2ec;">Loyalty Program</td>
-        {% for col in transfer_partner_table.columns %}
-        <td align="center" style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 11px; font-weight: bold; color: #234; background-color: #eef4fb; padding: 5px 8px; border-bottom: 1px solid #d9e2ec; white-space: nowrap;">{{ col }}</td>
-        {% endfor %}
-    </tr>
-    {% for row in transfer_partner_table.rows %}
-    <tr style="background-color: {{ '#ffffff' if loop.index is odd else '#f8fafd' }};">
-        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 12px; color: #333333; padding: 5px 8px; border-bottom: 1px solid #eef0f3;">{{ row.name }}</td>
-        {% for cell in row.cells %}
-        <td align="center" style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 12px; color: {{ '#0066cc' if cell and cell != '' else '#cccccc' }}; padding: 5px 8px; border-bottom: 1px solid #eef0f3; white-space: nowrap;">
-            {% if cell %}{{ cell }}{% else %}—{% endif %}
-        </td>
-        {% endfor %}
-    </tr>
-    {% endfor %}
-    </table>
-
-    {% if transfer_partner_table.has_reduced_rate %}
-    <p style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 11px; color: #999999; margin: 6px 0 0 0;">
-        &#9733; Reduced rate: 4:3 (1,000 points → 750 miles)
-    </p>
-    {% endif %}
+<!-- ATTRIBUTION BAR -->
+<tr>
+<td style="padding: 17px 30px; background-color: #eaf0f4; text-align: center;">
+    <p style="margin: 0; font-size: 11px; line-height: 17px; color: #637789;">Points Deal Finder &middot; Data from seats.aero &middot; Sent via Resend</p>
 </td>
 </tr>
 
 <!-- FOOTER -->
 <tr>
-<td style="background-color: #f0f0f0; padding: 16px 40px;">
-    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
-    <tr>
-        <td style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 12px; color: #999999; text-align: center;">
-            Points Deal Finder · Data from seats.aero · Sent via Resend
-        </td>
-    </tr>
-    </table>
+<td style="padding: 23px 30px 25px 30px; background-color: #17384f; border-radius: 0 0 9px 9px; text-align: center;">
+    <p style="margin: 0; font-size: 11px; line-height: 17px; color: #c4d5e1;">You're receiving this because you set up Points Deal Finder.</p>
+    <p style="margin: 5px 0 0 0; font-size: 11px; line-height: 17px; color: #c4d5e1;">Automated daily award-space scan.</p>
 </td>
 </tr>
 
