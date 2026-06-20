@@ -57,7 +57,7 @@ class EmailBuilderTest(unittest.TestCase):
         self.assertIn("50,000 Chase Ultimate Rewards/pp", content.html_body)
         self.assertIn("1 stop via MAD 2h · 17.5h", content.html_body)
         self.assertIn("1 stop via MAD 2h · 17.5h", content.text_body)
-        self.assertIn("View in seats.aero", content.html_body)
+        self.assertIn("seats.aero &rarr;", content.html_body)
         self.assertIn(
             "https://seats.aero/search?min_seats=2&amp;applicable_cabin=any&amp;disable_live_filtering=false&amp;date=2026-06-05&amp;origins=SAN&amp;destinations=LIS",
             content.html_body,
