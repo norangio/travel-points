@@ -271,10 +271,9 @@ def _build_deal_summary_rows(
 
         aircraft = ", ".join(a.aircraft_types) if a.aircraft_types else ""
 
-        points_display = (
-            f"{bp.points_needed_per_person:,} "
-            f"{bp.source_display_name}/pp"
-        )
+        points_value = f"{bp.points_needed_per_person:,}"
+        points_program = bp.source_display_name
+        points_display = f"{points_value} {points_program}/pp"
 
         # Stops + layover airport(s) + travel time
         stops = _format_stops_summary(a)
@@ -323,6 +322,8 @@ def _build_deal_summary_rows(
             "airline": airline,
             "aircraft": aircraft,
             "points": points_display,
+            "points_value": points_value,
+            "points_program": points_program,
             "trip_name": deal.trip_name,
             "direction": deal.direction,
             "direction_label": "OUT" if deal.direction == "outbound" else "RET" if deal.direction == "return" else "",

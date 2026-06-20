@@ -134,13 +134,14 @@
     {% set ns.deal_idx = ns.deal_idx + 1 %}
     {% set row_bg = '#ffffff' if ns.deal_idx is odd else '#f7f9fb' %}
     <tr style="background-color: {{ row_bg }};">
-        <td style="padding: 8px 8px 2px 8px; color: #263746; font-weight: bold;">{{ row.route }}</td>
+        <td style="padding: 8px 8px 2px 8px; color: #263746; font-weight: bold; white-space: nowrap;">{{ row.route }}</td>
         <td style="padding: 8px 8px 2px 8px; color: #637789; white-space: nowrap;">{{ row.date }}</td>
         <td style="padding: 8px 8px 2px 8px; color: #536878;">{{ row.airline }}{% if row.aircraft %} <span style="color: #7c8c99;">&middot; {{ row.aircraft }}</span>{% endif %}</td>
-        <td align="right" style="padding: 8px 8px 2px 8px; color: #203b50; font-weight: bold; white-space: nowrap;">
-            {{ row.points }}
+        <td align="right" style="padding: 8px 8px 2px 8px;">
+            <span style="color: #203b50; font-weight: bold; white-space: nowrap;">{{ row.points_value }}</span><span style="color: #8a99a6; font-weight: normal; font-size: 10px; white-space: nowrap;">&nbsp;/pp</span>
+            <br><span style="color: #637789; font-weight: normal; font-size: 11px;">{{ row.points_program }}</span>
             {% if row.search_url %}
-            <br><a href="{{ row.search_url }}" style="font-size: 11px; font-weight: normal; color: #17689a; text-decoration: none;">View in seats.aero</a>
+            <br><a href="{{ row.search_url }}" style="font-size: 11px; font-weight: normal; color: #17689a; text-decoration: none; white-space: nowrap;">seats.aero &rarr;</a>
             {% endif %}
         </td>
     </tr>
