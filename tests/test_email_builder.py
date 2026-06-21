@@ -94,3 +94,82 @@ class EmailBuilderTest(unittest.TestCase):
             "Avios (British Airways / Iberia / Aer Lingus)",
             content.text_body,
         )
+
+    def test_deals_sort_by_required_points_within_trip_sections(self) -> None:
+        expensive = _make_deal(
+            deal_id="expensive",
+            origin="SAN",
+            destination="LIS",
+            trip_name="Portugal / Spain",
+            points_needed=70000,
+            score=99,
+        )
+        japan = _make_deal(
+            deal_id="japan",
+            origin="LAX",
+            destination="HND",
+            trip_name="Japan Winter",
+            points_needed=80000,
+            score=95,
+        )
+        cheap = _make_deal(
+            deal_id="cheap",
+            origin="BCN",
+            destination="SFO",
+            trip_name="Portugal / Spain",
+            points_needed=55000,
+            score=75,
+        )
+
+        content = build_digest_email(
+            deals=[expensive, japan, cheap],
+            bonuses=[],
+            balances={"chase_ur": 190000},
+            config={"travelers": 2},
+        )
+
+        html = content.html_body
+        self.assertLess(html.index("BCN → SFO"), html.index("SAN → LIS"))
+        self.assertLess(html.index("SAN → LIS"), html.index("Japan Winter"))
+
+        text = content.text_body
+        self.assertLess(text.index("BCN → SFO"), text.index("SAN → LIS"))
+        self.assertLess(text.index("SAN → LIS"), text.index("JAPAN WINTER"))
+
+
+def _make_deal(
+    *,
+    deal_id: str,
+    origin: str,
+    destination: str,
+    trip_name: str,
+    points_needed: int,
+    score: float,
+) -> ScoredDeal:
+    return ScoredDeal(
+        availability=AwardAvailability(
+            id=deal_id,
+            source="avios",
+            origin=origin,
+            destination=destination,
+            departure_date=date(2026, 6, 5),
+            points_cost=points_needed,
+            seats_available=2,
+            operating_carriers=["TP"],
+        ),
+        score=score,
+        best_path=TransferPath(
+            source_program="chase_ur",
+            source_display_name="Chase Ultimate Rewards",
+            target_program="avios",
+            points_needed_per_person=points_needed,
+            points_needed_total=points_needed * 2,
+            affordable_one=True,
+            affordable_both=True,
+            balance_remaining=190000 - (points_needed * 2),
+        ),
+        all_paths=[],
+        airline_name="TAP Air Portugal",
+        trip_name=trip_name,
+        direction="outbound",
+    )

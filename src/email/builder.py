@@ -158,23 +158,24 @@ def build_digest_email(
     total_routes = len(stats)
     total_raw_results = sum(s.get("raw_results", 0) for s in stats)
 
-    preheader = _build_preheader(deals, bonuses, total_routes)
+    ordered_deals = _order_deals_for_email(deals)
+    preheader = _build_preheader(ordered_deals, bonuses, total_routes)
 
     # Build template context
     context = {
         "digest_date": digest_date,
         "digest_date_long": digest_date_long,
         "preheader": preheader,
-        "deals": deals,
+        "deals": ordered_deals,
         "deal_summary_rows": _build_deal_summary_rows(
-            deals,
+            ordered_deals,
             travelers=config.get("travelers", 2),
         ),
         "bonus_alerts": bonus_alerts,
         "all_bonuses": bonuses,
         "balances": balances,
         "travelers": config.get("travelers", 2),
-        "total_deals": len(deals),
+        "total_deals": len(ordered_deals),
         "has_bonuses": len(bonuses) > 0,
         "search_stats": stats,
         "total_routes_searched": total_routes,
@@ -189,7 +190,7 @@ def build_digest_email(
     html_body = html_template.render(**context)
 
     # Render plain text
-    text_body = _build_plain_text(deals, bonuses, balances, config, digest_date, stats)
+    text_body = _build_plain_text(ordered_deals, bonuses, balances, config, digest_date, stats)
 
     subject = f"Points Deal Finder — {digest_date}"
 
@@ -197,6 +198,32 @@ def build_digest_email(
         subject=subject,
         html_body=html_body,
         text_body=text_body,
+    )
+
+
+def _order_deals_for_email(deals: list[ScoredDeal]) -> list[ScoredDeal]:
+    """
+    Preserve trip-section order while sorting each section by required points.
+
+    The main pipeline may select deals by quality score; the email should be
+    easier to scan, with the cheapest bookable option first within each trip.
+    """
+    section_order: dict[str, int] = {}
+    for deal in deals:
+        key = deal.trip_name or ""
+        if key not in section_order:
+            section_order[key] = len(section_order)
+
+    return sorted(
+        deals,
+        key=lambda deal: (
+            section_order.get(deal.trip_name or "", 99),
+            deal.best_path.points_needed_per_person,
+            deal.availability.departure_date,
+            deal.availability.origin,
+            deal.availability.destination,
+            -deal.score,
+        ),
     )
 
 

@@ -25,6 +25,7 @@ Matches the Morning Brief email styling from email-reports:
 - MSO conditionals for Outlook desktop
 - Sections: Transfer Bonus Alerts → Unified deal table (enriched rows with detail line) → Balances Footer
 - Deal table: each deal = main row (route, date, flight, points/pp, best-effort seats.aero search link) + detail row (direction, stops, explicit layover airports/durations, seats, affordability, freshness, bonus, alt paths, layover analysis)
+- Within each trip section, deal rows render from lowest required points/person to highest required points/person
 - Score display removed (scoring engine not yet fleshed out)
 - Deal cards removed — all info consolidated into the table
 - Transfer bonus labels are expanded for readability (for example, `Avios` is shown as `Avios (British Airways / Iberia / Aer Lingus)`)

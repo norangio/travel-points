@@ -30,7 +30,7 @@ Points Deal Finder adds that layer of personalization and sends a compact digest
 - Incorporates active transfer bonuses from current-bonus pages plus manual overrides
 - Scores deals on cost, routing quality, airline quality, urgency, and value floor
 - Flags long layovers with hotel-cost and transit context
-- Groups results into a styled HTML email digest delivered through Resend
+- Groups results into a styled HTML email digest, with each trip section ordered by required points
 - Supports `active: false` so booked trips stay in config without cluttering the digest
 
 ## How It Works
@@ -39,9 +39,9 @@ Points Deal Finder adds that layer of personalization and sends a compact digest
 2. Query seats.aero cached availability for matching routes and dates.
 3. Pull trip details for the best candidates, within a request budget.
 4. Merge live transfer bonuses with any manual bonus overrides.
-5. Score and rank the deals using routing, transfer cost, airline quality, and value filters.
+5. Score and select deals using routing, transfer cost, airline quality, and value filters.
 6. Add layover analysis for long stops.
-7. Render and send the daily digest email.
+7. Render each trip section cheapest-first by required points, then send the daily digest email.
 
 ## Requirements
 
