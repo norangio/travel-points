@@ -20,11 +20,12 @@
 
 ## Email Format
 
-Matches the Morning Brief email styling from email-reports:
-- Calibri font, #0066cc blue headers, fluid 600px max-width, inline styles only
+Matches the flat Morning Brief editorial styling from email-reports:
+- Helvetica/Arial body, dark masthead, restrained blue/gray accents, fluid 640px max-width, inline styles only
+- No `<style>` blocks, CSS media queries, or class-dependent styling in production email templates
 - MSO conditionals for Outlook desktop
-- Sections: Transfer Bonus Alerts → Unified deal table (enriched rows with detail line) → Balances Footer
-- Deal table: each deal = main row (route, date, flight, points/pp, best-effort seats.aero search link) + detail row (direction, stops, explicit layover airports/durations, seats, affordability, freshness, bonus, alt paths, layover analysis)
+- Sections: Transfer Bonus Alerts → Editorial deal list with compact detail lines → Search Coverage → Balances → Transfer Partner Reference
+- Deal list: each deal = route/points headline, date/airline/program subline, direction/stops/seats/affordability/freshness detail line, seats.aero link, plus optional alt paths and layover analysis
 - Within each trip section, deal rows render from lowest required points/person to highest required points/person
 - Score display removed (scoring engine not yet fleshed out)
 - Deal cards removed — all info consolidated into the table

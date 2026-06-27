@@ -14,17 +14,6 @@
         </xml>
     </noscript>
     <![endif]-->
-    <style type="text/css">
-        @media screen and (max-width: 600px) {
-            .wrap { padding: 16px 0 !important; }
-            .sheet { border-radius: 0 !important; border-left: 0 !important; border-right: 0 !important; }
-            .mast { padding: 30px 22px 26px 22px !important; }
-            .mast-h1 { font-size: 25px !important; line-height: 30px !important; }
-            .sec { padding: 26px 22px !important; }
-            .deal-pts { font-size: 16px !important; }
-            .ref td { padding-left: 6px !important; padding-right: 6px !important; }
-        }
-    </style>
 </head>
 <body style="margin: 0; padding: 0; background-color: #eef1f4; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 14px; line-height: 22px; color: #2b3a48; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%;">
 
@@ -33,16 +22,16 @@
 
 <!-- Outer wrapper -->
 <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width: 100%; background-color: #eef1f4;">
-<tr><td align="center" class="wrap" style="padding: 28px 12px;">
+<tr><td align="center" style="padding: 28px 12px;">
 
 <!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="640" align="center"><tr><td><![endif]-->
-<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" class="sheet" style="width: 100%; max-width: 640px; margin: 0 auto; background-color: #ffffff; border: 1px solid #dfe5ea; border-radius: 3px;">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width: 100%; max-width: 640px; margin: 0 auto; background-color: #ffffff; border: 1px solid #dfe5ea; border-radius: 3px;">
 
 <!-- MASTHEAD -->
 <tr>
-<td class="mast" style="padding: 38px 40px 32px 40px; background-color: #0f2e44;">
+<td style="padding: 38px 40px 32px 40px; background-color: #0f2e44;">
     <p style="margin: 0 0 12px 0; font-size: 11px; font-weight: bold; line-height: 16px; color: #7fa3bd; text-transform: uppercase; letter-spacing: 2px;">Daily Award Digest</p>
-    <h1 class="mast-h1" style="margin: 0; font-size: 29px; font-weight: bold; line-height: 35px; color: #ffffff; letter-spacing: -0.3px;">Points Deal Finder</h1>
+    <h1 style="margin: 0; font-size: 29px; font-weight: bold; line-height: 35px; color: #ffffff; letter-spacing: -0.3px;">Points Deal Finder</h1>
     <p style="margin: 11px 0 0 0; font-size: 13px; line-height: 20px; color: #aac4d6;">{{ digest_date_long }}</p>
 </td>
 </tr>
@@ -50,7 +39,7 @@
 {% if has_bonuses %}
 <!-- TRANSFER BONUS ALERTS -->
 <tr>
-<td class="sec" style="padding: 30px 40px 26px 40px;">
+<td style="padding: 30px 40px 26px 40px;">
     <p style="margin: 0 0 3px 0; font-size: 11px; font-weight: bold; line-height: 15px; color: #93a3b1; text-transform: uppercase; letter-spacing: 1.4px;">Alerts</p>
     <h2 style="margin: 0 0 18px 0; font-size: 19px; font-weight: bold; line-height: 25px; color: #1a2b38; letter-spacing: -0.2px;">Transfer Bonus Alerts</h2>
 
@@ -89,7 +78,7 @@
 
 <!-- DEALS -->
 <tr>
-<td class="sec" style="padding: 28px 40px; border-top: 1px solid #e7ecf0;">
+<td style="padding: 28px 40px; border-top: 1px solid #e7ecf0;">
     <p style="margin: 0 0 3px 0; font-size: 11px; font-weight: bold; line-height: 15px; color: #93a3b1; text-transform: uppercase; letter-spacing: 1.4px;">Award Space</p>
     <h2 style="margin: 0 0 6px 0; font-size: 19px; font-weight: bold; line-height: 25px; color: #1a2b38; letter-spacing: -0.2px;">
         {% if total_deals > 0 %}Top {{ total_deals }} Deal{{ 's' if total_deals != 1 else '' }} Tonight{% else %}No Deals Found Today{% endif %}
@@ -120,7 +109,7 @@
             <tr>
                 <td valign="top" style="font-size: 17px; font-weight: bold; line-height: 22px; color: #1a2b38; white-space: nowrap;">{{ row.route }}</td>
                 <td valign="top" align="right" style="white-space: nowrap; padding-left: 10px;">
-                    <span class="deal-pts" style="font-size: 17px; font-weight: bold; color: #1a2b38;">{{ row.points_value }}</span><span style="font-size: 11px; color: #98a5b1;">&nbsp;/pp</span>
+                    <span style="font-size: 17px; font-weight: bold; color: #1a2b38;">{{ row.points_value }}</span><span style="font-size: 11px; color: #98a5b1;">&nbsp;/pp</span>
                 </td>
             </tr>
             <tr>
@@ -176,12 +165,12 @@
 {% if not deals and search_stats %}
 <!-- SEARCH SUMMARY -->
 <tr>
-<td class="sec" style="padding: 28px 40px; border-top: 1px solid #e7ecf0;">
+<td style="padding: 28px 40px; border-top: 1px solid #e7ecf0;">
     <p style="margin: 0 0 3px 0; font-size: 11px; font-weight: bold; line-height: 15px; color: #93a3b1; text-transform: uppercase; letter-spacing: 1.4px;">Coverage</p>
     <h2 style="margin: 0 0 4px 0; font-size: 19px; font-weight: bold; line-height: 25px; color: #1a2b38; letter-spacing: -0.2px;">What We Searched</h2>
     <p style="margin: 0 0 16px 0; font-size: 12px; line-height: 18px; color: #8a98a4;">{{ total_routes_searched }} route{{ 's' if total_routes_searched != 1 else '' }}, {{ total_raw_results }} raw result{{ 's' if total_raw_results != 1 else '' }} from seats.aero</p>
 
-    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" class="ref" style="width: 100%; font-size: 12px; border-collapse: collapse;">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width: 100%; font-size: 12px; border-collapse: collapse;">
     <tr>
         <td style="padding: 0 8px 7px 0; font-weight: bold; color: #93a3b1; text-transform: uppercase; letter-spacing: 0.6px; font-size: 10px; border-bottom: 2px solid #e3e9ee;">Route</td>
         <td style="padding: 0 8px 7px 8px; font-weight: bold; color: #93a3b1; text-transform: uppercase; letter-spacing: 0.6px; font-size: 10px; border-bottom: 2px solid #e3e9ee;">Dir</td>
@@ -203,7 +192,7 @@
 
 <!-- BALANCES -->
 <tr>
-<td class="sec" style="padding: 28px 40px; border-top: 1px solid #e7ecf0;">
+<td style="padding: 28px 40px; border-top: 1px solid #e7ecf0;">
     <p style="margin: 0 0 3px 0; font-size: 11px; font-weight: bold; line-height: 15px; color: #93a3b1; text-transform: uppercase; letter-spacing: 1.4px;">Accounts</p>
     <h2 style="margin: 0 0 16px 0; font-size: 19px; font-weight: bold; line-height: 25px; color: #1a2b38; letter-spacing: -0.2px;">Your Point Balances</h2>
 
@@ -220,11 +209,11 @@
 
 <!-- TRANSFER PARTNER REFERENCE -->
 <tr>
-<td class="sec" style="padding: 28px 40px 30px 40px; border-top: 1px solid #e7ecf0;">
+<td style="padding: 28px 40px 30px 40px; border-top: 1px solid #e7ecf0;">
     <p style="margin: 0 0 3px 0; font-size: 11px; font-weight: bold; line-height: 15px; color: #93a3b1; text-transform: uppercase; letter-spacing: 1.4px;">Reference</p>
     <h2 style="margin: 0 0 16px 0; font-size: 17px; font-weight: bold; line-height: 23px; color: #1a2b38; letter-spacing: -0.2px;">Transfer Partner Reference</h2>
 
-    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" class="ref" style="width: 100%; font-size: 11px; line-height: 16px; border-collapse: collapse;">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width: 100%; font-size: 11px; line-height: 16px; border-collapse: collapse;">
     <tr>
         <td style="padding: 0 8px 7px 0; font-weight: bold; color: #93a3b1; text-transform: uppercase; letter-spacing: 0.5px; font-size: 10px; border-bottom: 2px solid #e3e9ee;">Loyalty Program</td>
         {% for col in transfer_partner_table.columns %}

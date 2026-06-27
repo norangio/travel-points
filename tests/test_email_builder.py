@@ -48,16 +48,17 @@ class EmailBuilderTest(unittest.TestCase):
         )
 
         self.assertIn("Top 1 Deal Tonight", content.html_body)
-        self.assertIn("Route", content.html_body)
-        self.assertIn("Flight", content.html_body)
-        self.assertIn("Points/pp", content.html_body)
         self.assertIn("SAN → LIS", content.html_body)
         self.assertIn("Jun 05", content.html_body)
         self.assertIn("TAP Air Portugal (A330 Business)", content.html_body)
-        self.assertIn("50,000 Chase Ultimate Rewards/pp", content.html_body)
+        self.assertIn("50,000</span><span", content.html_body)
+        self.assertIn("Chase Ultimate Rewards", content.html_body)
         self.assertIn("1 stop via MAD 2h · 17.5h", content.html_body)
         self.assertIn("1 stop via MAD 2h · 17.5h", content.text_body)
         self.assertIn("seats.aero &rarr;", content.html_body)
+        self.assertNotIn("<style", content.html_body)
+        self.assertNotIn("@media", content.html_body)
+        self.assertNotIn("class=", content.html_body)
         self.assertIn(
             "https://seats.aero/search?min_seats=2&amp;applicable_cabin=any&amp;disable_live_filtering=false&amp;date=2026-06-05&amp;origins=SAN&amp;destinations=LIS",
             content.html_body,
