@@ -73,6 +73,7 @@ def _program_label(program: str) -> str:
 # Register custom filters
 jinja_env.filters["format_number"] = lambda n: f"{n:,}"
 jinja_env.filters["program_label"] = _program_label
+jinja_env.filters["balance_label"] = _program_label
 
 
 def _build_transfer_partner_table() -> dict:
@@ -328,9 +329,9 @@ def _build_deal_summary_rows(
         for la in deal.layover_analyses:
             hotel_parts: list[str] = []
             if la.airport_hotel_usd:
-                hotel_parts.append(f"~${la.airport_hotel_usd}/night near airport")
+                hotel_parts.append(f"~${la.airport_hotel_usd} airport")
             if la.city_center_hotel_usd:
-                hotel_parts.append(f"~${la.city_center_hotel_usd}/night city center")
+                hotel_parts.append(f"~${la.city_center_hotel_usd} city center")
 
             transit_parts: list[str] = []
             for t in la.transit_options:
